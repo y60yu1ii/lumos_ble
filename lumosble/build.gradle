@@ -1,0 +1,51 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+ext {
+    bintrayRepo = 'fishare'
+    bintrayName = 'lumos-ble'
+    publishedGroupId = 'de.fishare.lumosble'
+    libraryName = 'LumosBLE'
+    artifact = 'lumosble'
+    libraryDescription = 'A simple library that demostrates ble.'
+    siteUrl = 'https://'
+    gitUrl = 'https://gitlab.com/y60yu1ii/lumos-ble.git/'
+    libraryVersion = '0.1'
+    developerId = 'y60yu1ii'
+    developerName = 'YaoYu Li'
+    developerEmail = 'y60yu1ii@gmail.com'
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 22
+        targetSdkVersion 28
+        versionCode 1
+        versionName "0.1"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/bintrayv1.gradle'
