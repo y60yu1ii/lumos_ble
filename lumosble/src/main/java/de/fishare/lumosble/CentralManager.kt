@@ -1,19 +1,29 @@
 package de.fishare.lumosble
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Handler
 
 class CentralManager private constructor(context : Context) {
     companion object : SingletonHolder<CentralManager, Context>(::CentralManager) {
         const val TAG = "CentralManager"
-        const val CONNECT_FILTER: Float = -58f
-        const val IGNORE_FILTER:  Float = -65f
         val BLE_PERMISSIONS = arrayOf(
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION
         )
-        const val NAME_REGX = ""
     }
+    var CONNECT_THRESHOLD = -58f
+    var FILTERS  = listOf("1802")
+
+    private val scanner by lazy {
+        Discover(FILTERS, scanCallback, context )
+    }
+
+    private var scanCallback = object : ScanResultCallback {
+        override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
+        }
+    }
+
     interface EventListener{
         fun onRefreshed()
     }
