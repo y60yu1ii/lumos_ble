@@ -2,4 +2,16 @@
           package="de.fishare.lumosble">
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <application android:supportsRtl="true">
+        <activity android:name="ReqActivity"
+                  android:label="@string/app_name"
+                  android:theme="@android:style/Theme.Dialog">
+            <intent-filter >
+                <action android:name="de.fishare.req"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

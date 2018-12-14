@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:gravity="center"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        <LinearLayout android:layout_width="120dp"
+                      android:layout_height="match_parent"
+                      android:orientation="vertical"
+                      android:gravity="center"
+        >
+
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:text="name"
+                          android:gravity="center"
+                          android:id="@+id/lblName"
+                />
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:text="mac"
+                          android:gravity="center"
+                          android:id="@+id/lblMac"
+                />
+        </LinearLayout>
+        <LinearLayout android:layout_width="100dp"
+                      android:layout_height="match_parent"
+                      android:orientation="vertical"
+                      android:gravity="center"
+        >
+
+                <TextView android:layout_width="100dp"
+                          android:layout_height="wrap_content"
+                          android:text="rssi"
+                          android:gravity="center"
+                          android:id="@+id/lblRSSI"
+                />
+
+                <TextView android:layout_width="100dp"
+                          android:layout_height="wrap_content"
+                          android:text="event"
+                          android:gravity="center"
+                          android:id="@+id/lblEvent"
+                />
+                <TextView android:layout_width="100dp"
+                          android:layout_height="wrap_content"
+                          android:text="data"
+                          android:gravity="center"
+                          android:id="@+id/lblData"
+                />
+        </LinearLayout>
+        <Button android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:id="@+id/btnConnect"
+        />
+</LinearLayout>

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">LumosBLE</string>
+    <string name="app_name">Lumos BLE</string>
+    <string name="req_action">de.fishare.req</string>
 </resources>

@@ -30,6 +30,10 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     }
 
+    private val adapter by lazy {
+        bluetoothManager.adapter
+    }
+
     init {
         //after Android 8.0, scanning without filter is no longer available
         uuids.forEach {
@@ -38,11 +42,6 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
         }
         scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
         scanSettings = scanSettingsBuilder.build()
-    }
-
-
-    fun isDiscovering(): Boolean {
-        return bluetoothManager.adapter?.isDiscovering ?: false
     }
 
     private val scanCallback = object : ScanCallback() {
@@ -54,9 +53,8 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
 
     @TargetApi(Build.VERSION_CODES.M)
     fun startScan() {
-        if (!bluetoothManager.adapter.isDiscovering
-            && bluetoothManager.adapter.isEnabled) {
-            bluetoothManager.adapter?.bluetoothLeScanner?.startScan(scanFilters, scanSettings, scanCallback)
+        if (adapter.isEnabled) {
+            adapter?.bluetoothLeScanner?.startScan(scanFilters, scanSettings, scanCallback)
         }
     }
 
