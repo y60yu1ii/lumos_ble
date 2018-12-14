@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:background="@android:color/white"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="150dp"
         android:gravity="center"
         xmlns:android="http://schemas.android.com/apk/res/android">
         <LinearLayout android:layout_width="120dp"
@@ -51,9 +50,21 @@
                           android:id="@+id/lblData"
                 />
         </LinearLayout>
+        <LinearLayout android:layout_width="100dp"
+                      android:layout_height="match_parent"
+                      android:orientation="vertical"
+                      android:gravity="center"
+        >
         <Button android:layout_width="100dp"
                 android:layout_height="50dp"
                 android:gravity="center"
                 android:id="@+id/btnConnect"
         />
+
+        <Button android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:id="@+id/btnTest"
+        />
+        </LinearLayout>
 </LinearLayout>

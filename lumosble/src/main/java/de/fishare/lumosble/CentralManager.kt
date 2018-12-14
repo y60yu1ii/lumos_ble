@@ -13,7 +13,7 @@ import kotlin.concurrent.thread
 class CentralManager private constructor(val context : Context) {
     interface EventListener{
         fun onRefresh()
-        fun didDiscover()
+        fun didDiscover(availObj: AvailObj)
         fun didConnect()
         fun didDisconnect()
     }
@@ -21,18 +21,16 @@ class CentralManager private constructor(val context : Context) {
         const val TAG  = "CentralManager"
         val BLE_PERMIT = android.Manifest.permission.ACCESS_COARSE_LOCATION
     }
-    private var CONNECT_THRESHOLD = -65f
-    private var FILTERS  = listOf("1802")
+    private var CONNECT_THRESHOLD = -75f
+    private var FILTERS: List<String> = listOf()
     var event : EventListener? = null
     private val dataMgr = DataManager.getInstance(context)
     private val handler = Handler()
 
     var avails:MutableList<AvailObj> = mutableListOf()
     var periMap: MutableMap<String, PeriObj> = mutableMapOf()
-    var history:List<PeriObj>  = mutableListOf()
-        get() {
-           return  periMap.values.toList()
-        }
+    var peris:MutableList<PeriObj>  = mutableListOf()
+        get() { return  periMap.values.toMutableList() }
 
     private val scanner by lazy {
         Discover(FILTERS, scanCallback, context )
@@ -40,9 +38,12 @@ class CentralManager private constructor(val context : Context) {
 
     private var scanCallback = object : ScanResultCallback {
         override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
-            thread(start=true, name = "discover", isDaemon = true) {
-//                print(TAG, "[onDiscover] device is ${device.address} and RSSI is $RSSI")
-                avails.singleOrNull { it.mac == device.address }?.let { it.rssi = RSSI } ?: run{ if(RSSI > CONNECT_THRESHOLD) addAvail(device) }
+            if(device.name == null) return
+            val avl = avails.firstOrNull { it.mac == device.address }
+            if(avl != null){
+                avl.rssi = RSSI
+            }else if(RSSI > CONNECT_THRESHOLD){
+                addAvail(device)
             }
         }
     }
@@ -56,10 +57,22 @@ class CentralManager private constructor(val context : Context) {
         avails.singleOrNull { it.mac == device.address } ?: run {
             print(TAG, "[ADD TO AVAIL] count ${avails.size} mac is ${avl.mac}")
             avails.add(avl)
-            event?.didDiscover()
+            event?.didDiscover(avl)
         }
     }
 
+    fun connect(mac:String){
+        val avl = avails.singleOrNull { it.mac == mac }
+        if(avl != null){ connect(avl.device) }
+    }
+
+    private fun connect(device: BluetoothDevice){
+        print(TAG, "Connecting")
+        val periObj = PeriObj(device.address)
+        periObj.connect(device, context)
+        periMap[device.address] = periObj
+        avails.removeAll { it.mac == device.address }
+    }
 
 /**
  *  Public methods

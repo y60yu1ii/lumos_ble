@@ -1,6 +1,7 @@
 package de.fishare.lumosble
 
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 
 class PeriObj(val mac:String){
     var TAG = "Peri"
@@ -20,4 +21,29 @@ class PeriObj(val mac:String){
             if(value != field && rssi < 0){ listener?.onRSSIChanged(rssi, mac) }
             field = value
         }
+
+    fun connect(dev: BluetoothDevice, context: Context){
+        this.device = dev
+        name = dev.name
+        controller = GattController().apply {
+            gatt = device?.connectGatt(context, false, this)
+            listener = controlHandler
+        }
+    }
+
+    private val controlHandler = object : GattController.Listener {
+        override fun didConnect() {
+            print(TAG, "$mac is connected")
+        }
+
+        override fun didDisconnect() {
+        }
+
+        override fun onRSSIUpdated(rawRSSI: Int) {
+        }
+
+        override fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
+        }
+    }
+
 }

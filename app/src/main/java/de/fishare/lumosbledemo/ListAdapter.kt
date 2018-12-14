@@ -8,6 +8,10 @@ import android.view.ViewGroup
 
 class ListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var dataSource:ListAdapter.AdapterDataSource? = null
+    interface ItemEvent{
+        fun onItemClick(view:View, position:Int)
+    }
+    var listener:ItemEvent? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, row: Int): RecyclerView.ViewHolder {
         return dataSource?.cellForRow(this, parent, row)!!

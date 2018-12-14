@@ -9,7 +9,7 @@ import java.util.*
 
 class GattController : BluetoothGattCallback() {
     enum class UpdateKind{ Write, Read, Notify }
-    interface ControllerListener{
+    interface Listener{
         fun didConnect()
         fun didDisconnect()
         fun onRSSIUpdated(rawRSSI: Int)
@@ -21,12 +21,12 @@ class GattController : BluetoothGattCallback() {
        private const val DESCRIPTOR_STR = "00002902-0000-1000-8000-00805f9b34fb"
     }
 
-    public var isConnected : Boolean = false
+    var isConnected : Boolean = false
     var gatt : BluetoothGatt? = null
     private var writeQueue: WriteQueue = WriteQueue()
     private var handler:Handler = Handler()
     private var chMap : MutableMap<String, BluetoothGattCharacteristic> = mutableMapOf()
-    public var listener: ControllerListener?=null
+    var listener: Listener?=null
 
     public fun disconenct(){
         gatt?.disconnect()

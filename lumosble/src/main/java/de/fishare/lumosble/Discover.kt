@@ -40,7 +40,7 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
             val filter = ScanFilter.Builder().setServiceUuid(it.toParcelUUID()).build()
             scanFilters.add(filter)
         }
-        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_BALANCED)
         scanSettings = scanSettingsBuilder.build()
     }
 
