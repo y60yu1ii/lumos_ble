@@ -34,9 +34,12 @@ class PeriObj(val mac:String){
     private val controlHandler = object : GattController.Listener {
         override fun didConnect() {
             print(TAG, "$mac is connected")
+            listener?.onStatusChanged(true, this@PeriObj)
         }
 
         override fun didDisconnect() {
+            print(TAG, "$mac is disconnected")
+            listener?.onStatusChanged(false, this@PeriObj)
         }
 
         override fun onRSSIUpdated(rawRSSI: Int) {

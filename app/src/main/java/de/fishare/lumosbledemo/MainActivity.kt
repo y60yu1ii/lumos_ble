@@ -36,8 +36,8 @@ class MainActivity : Activity() {
     }
 
     private fun onRefresh(){
-        avails = centralMgr.avails.toMutableList()
-        peris  = centralMgr.peris.toMutableList()
+        avails = centralMgr.avails
+        peris  = centralMgr.peris
 
         print(TAG, "onRefresh size is ${avails.size}")
         avails.forEach { it.listener = availHandler }
@@ -49,16 +49,13 @@ class MainActivity : Activity() {
         }
 
         override fun didDiscover(availObj: AvailObj) {
-            val avl = avails.firstOrNull { it.mac == availObj.mac }
-            print(TAG, "avail is ${availObj.mac} avl is ${avl?.mac} current size is ${avails.size}")
-            if(avl == null){
-                avails.add(availObj)
-                availObj.listener = availHandler
-                runOnUiThread { adapter.reload() }
-            }
+            availObj.listener = availHandler
+            runOnUiThread { adapter.reload() }
         }
 
         override fun didConnect() {
+
+            runOnUiThread { adapter.reload() }
         }
 
         override fun didDisconnect() {
@@ -75,8 +72,6 @@ class MainActivity : Activity() {
             }
         }
     }
-
-
 //     #2 Lets update the view content after a while
 //    fun editView(){
 //        list.add("d")
@@ -102,16 +97,15 @@ class MainActivity : Activity() {
 //    }
 
     fun setItemViewContent(v:RenderItem, position: Int){
-        val data = avails[position]
-        val onClick = View.OnClickListener { adapter.listener?.onItemClick(it, position) }
-
-        v.lblName.text = data.name
-        v.lblMac.text  =  data.mac
-        v.btnConnect.text = "Connect"
-        v.lblRSSI.text = data.rssi.toString()
-        v.btnTest.visibility = View.GONE
-        v.btnConnect.setOnClickListener(onClick)
-//        v.btnTest.setOnClickListener(onClick)
+//        val data = avails[position]
+//        val onClick = View.OnClickListener { adapter.listener?.onItemClick(it, position) }
+//
+//        v.lblName.text = data.name
+//        v.lblMac.text  =  data.mac
+//        v.btnConnect.text = "Connect"
+//        v.lblRSSI.text = data.rssi.toString()
+//        v.btnTest.visibility = View.GONE
+//        v.btnConnect.setOnClickListener(onClick)
     }
 
     private fun getRenderItem(position:Int):RenderItem?{
@@ -122,17 +116,28 @@ class MainActivity : Activity() {
     private fun initListView(){
         adapter = ListAdapter()
         adapter.dataSource = object : ListAdapter.AdapterDataSource {
-            override fun onBindOfRow(adapter: ListAdapter, vh: RecyclerView.ViewHolder, position: Int) {
+            override fun numberOfRowIn(section: Int): Int {
+                return if(section == 0){
+                    5
+                }else{
+                    4
+                }
+            }
+
+            override fun numberOfSection(): Int {
+                return 2
+            }
+
+            override fun onBindOfRow(vh: RecyclerView.ViewHolder, position: Int) {
                 setItemViewContent(vh as RenderItem, position)
             }
 
-            override fun cellForRow(adapter: ListAdapter, parent: ViewGroup, row: Int): RecyclerView.ViewHolder {
+            override fun cellForRow(parent: ViewGroup, section: Int): RecyclerView.ViewHolder {
                 val view = LayoutInflater.from(applicationContext).inflate(R.layout.cell_device, parent, false)
-                return RenderItem(view)
-            }
-
-            override fun numberOfRow(adapter: ListAdapter): Int {
-                return avails.size
+                val vh = RenderItem(view)
+                vh.lblData.text = "section is $section"
+//                return RenderItem(view)
+                return vh
             }
 
         }
@@ -144,7 +149,6 @@ class MainActivity : Activity() {
                        centralMgr.connect(avails[position]?.mac)
                        val vh = getRenderItem(position)
                        vh?.btnConnect?.post { vh.btnConnect.text = "connecting" }
-
                    }
                    R.id.btnTest -> {
 //                       print(TAG, "item is click at $position view is test")

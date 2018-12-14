@@ -72,6 +72,7 @@ class CentralManager private constructor(val context : Context) {
         periObj.connect(device, context)
         periMap[device.address] = periObj
         avails.removeAll { it.mac == device.address }
+        event?.didConnect()
     }
 
 /**
