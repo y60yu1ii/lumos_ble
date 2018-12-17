@@ -14,8 +14,6 @@ class CentralManager private constructor(val context : Context) {
     interface EventListener{
         fun onRefresh()
         fun didDiscover(availObj: AvailObj)
-        fun didConnect()
-        fun didDisconnect()
     }
     companion object : SingletonHolder<CentralManager, Context>(::CentralManager) {
         const val TAG  = "CentralManager"
@@ -72,7 +70,7 @@ class CentralManager private constructor(val context : Context) {
         periObj.connect(device, context)
         periMap[device.address] = periObj
         avails.removeAll { it.mac == device.address }
-        event?.didConnect()
+        event?.onRefresh()
     }
 
 /**

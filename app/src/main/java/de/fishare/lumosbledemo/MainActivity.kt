@@ -1,6 +1,8 @@
 package de.fishare.lumosbledemo
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.widget.LinearLayoutManager
@@ -41,6 +43,7 @@ class MainActivity : Activity() {
 
         print(TAG, "onRefresh size is ${avails.size}")
         avails.forEach { it.listener = availHandler }
+        runOnUiThread { adapter.reload() }
     }
 
     private val centralEvents = object : CentralManager.EventListener{
@@ -51,14 +54,6 @@ class MainActivity : Activity() {
         override fun didDiscover(availObj: AvailObj) {
             availObj.listener = availHandler
             runOnUiThread { adapter.reload() }
-        }
-
-        override fun didConnect() {
-
-            runOnUiThread { adapter.reload() }
-        }
-
-        override fun didDisconnect() {
         }
     }
 
@@ -96,16 +91,23 @@ class MainActivity : Activity() {
 //        v.btnTest.setOnClickListener(onClick)
 //    }
 
-    fun setItemViewContent(v:RenderItem, position: Int){
+    fun setItemViewContent(v:RenderItem, indexPath: ListAdapter.IndexPath){
+        if(indexPath.section == 0){
 //        val data = avails[position]
+             v.lblName.text = "section is ${indexPath.section}"
+            v.lblData.text = "row is $indexPath"
+
+        }else{
+            v.lblData.text = "row is $indexPath"
+        }
 //        val onClick = View.OnClickListener { adapter.listener?.onItemClick(it, position) }
 //
-//        v.lblName.text = data.name
 //        v.lblMac.text  =  data.mac
 //        v.btnConnect.text = "Connect"
 //        v.lblRSSI.text = data.rssi.toString()
 //        v.btnTest.visibility = View.GONE
 //        v.btnConnect.setOnClickListener(onClick)
+//                return RenderItem(view)
     }
 
     private fun getRenderItem(position:Int):RenderItem?{
@@ -117,10 +119,10 @@ class MainActivity : Activity() {
         adapter = ListAdapter()
         adapter.dataSource = object : ListAdapter.AdapterDataSource {
             override fun numberOfRowIn(section: Int): Int {
-                return if(section == 0){
-                    5
-                }else{
-                    4
+                return when(section){
+                    0 -> avails.count()
+                    1 -> peris.count()
+                    else-> 0
                 }
             }
 
@@ -128,18 +130,14 @@ class MainActivity : Activity() {
                 return 2
             }
 
-            override fun onBindOfRow(vh: RecyclerView.ViewHolder, position: Int) {
-                setItemViewContent(vh as RenderItem, position)
+            override fun onBindOfRow(vh: RecyclerView.ViewHolder, indexPath: ListAdapter.IndexPath) {
+                setItemViewContent(vh as RenderItem, indexPath)
             }
 
             override fun cellForRow(parent: ViewGroup, section: Int): RecyclerView.ViewHolder {
                 val view = LayoutInflater.from(applicationContext).inflate(R.layout.cell_device, parent, false)
-                val vh = RenderItem(view)
-                vh.lblData.text = "section is $section"
-//                return RenderItem(view)
-                return vh
+                return RenderItem(view)
             }
-
         }
 
         adapter.listener = object : ListAdapter.ItemEvent{
