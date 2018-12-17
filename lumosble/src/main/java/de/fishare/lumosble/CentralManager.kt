@@ -8,9 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.support.v4.content.ContextCompat
-import kotlin.concurrent.thread
 
-class CentralManager private constructor(val context : Context) {
+class CentralManager private constructor(val context : Context): PeriObj.StatusEvent {
     interface EventListener{
         fun onRefresh()
         fun didDiscover(availObj: AvailObj)
@@ -66,12 +65,24 @@ class CentralManager private constructor(val context : Context) {
 
     private fun connect(device: BluetoothDevice){
         print(TAG, "Connecting")
-        val periObj = PeriObj(device.address)
-        periObj.connect(device, context)
-        periMap[device.address] = periObj
-        avails.removeAll { it.mac == device.address }
-        event?.onRefresh()
+        val periObj = periMap[device.address] ?: PeriObj(device.address)
+        stopScan()
+        if(periObj.isConnecting.not()){
+            handler.post { periObj.connect(device, context) }
+            periMap[device.address] = periObj
+            avails.removeAll { it.mac == device.address }
+            periObj.event = this@CentralManager
+        }
     }
+
+    override fun onStatusChanged(isConnected: Boolean, periObj: PeriObj) {
+//        print(TAG, "[didConnect] peri is ${periObj.mac} and isConnected $isConnected")
+        context.sendBroadcast(Intent(CONNECTION_EVENT).apply {
+            putExtra("mac", periObj.mac)
+            putExtra("connected", isConnected)
+        })
+    }
+
 
 /**
  *  Public methods
@@ -110,11 +121,12 @@ class CentralManager private constructor(val context : Context) {
     }
 
     private fun loadHistory(){
-        dataMgr.getHistory().forEach { mac -> periMap[mac] = PeriObj(mac) }
+        dataMgr.getHistory().forEach {
+                mac -> periMap[mac] = PeriObj(mac).apply { event = this@CentralManager }
+        }
     }
 
     private fun delay(sec:Float, lambda: () -> Unit){
         handler.postDelayed({lambda()}, (sec * 1000).toLong())
     }
-
 }

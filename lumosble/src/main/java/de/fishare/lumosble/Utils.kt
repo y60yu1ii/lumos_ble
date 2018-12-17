@@ -6,6 +6,8 @@ import android.os.Parcelable
 import android.util.Log
 import java.util.*
 
+val CONNECTION_EVENT = "de.fishare.connection"
+
 fun UUID.short():String {return this.toString().substring(4, 8)}
 fun String.getUUID(): UUID {return UUID.fromString("0000$this-0000-1000-8000-00805f9b34fb")}
 fun String.toParcelUUID(): ParcelUuid {return ParcelUuid.fromString("0000$this-0000-1000-8000-00805f9b34fb")}

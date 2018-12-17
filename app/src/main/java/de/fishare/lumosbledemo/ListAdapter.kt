@@ -9,7 +9,7 @@ class ListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var dataSource:ListAdapter.AdapterDataSource? = null
 
     interface ItemEvent{
-        fun onItemClick(view:View, position:Int)
+        fun onItemClick(view:View, indexPath: IndexPath)
     }
     var listener:ItemEvent? = null
 
@@ -31,27 +31,12 @@ class ListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun getItemViewType(position: Int): Int {
-        var pos = position
-        val secCap = dataSource?.numberOfSection() ?: 0
-        var viewType = 0
-        for(section in 0 until secCap){
-            val row = dataSource?.numberOfRowIn(section) ?:0
-            if(pos < row){
-                viewType = section
-                break
-            } else{
-                pos -= row
-                continue
-            }
-        }
-        return viewType
+        return getIndexPath(position).section
     }
 
     private fun getIndexPath(position: Int):IndexPath{
         val secCap = dataSource?.numberOfSection() ?: 0
-        val indexPath = getRecursiveIdxPath(position, IndexPath(0, position), secCap)
-        print("LIST", "index path is $indexPath")
-        return indexPath
+        return getRecursiveIdxPath(position, IndexPath(0, position), secCap)
     }
 
     private fun getRecursiveIdxPath(pos:Int, indexPath: IndexPath, cap:Int):IndexPath{
@@ -68,6 +53,17 @@ class ListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun reload(){
         notifyDataSetChanged()
+    }
+
+    fun getPositionOf(indexPath: IndexPath):Int{
+        var position = indexPath.row
+        val section = indexPath.section - 1
+        if(section < 0) return position
+        for(idx in 0..section){
+            val numberOfRow = dataSource?.numberOfRowIn(idx) ?:0
+            position += numberOfRow
+        }
+        return position
     }
 
     interface AdapterDataSource {

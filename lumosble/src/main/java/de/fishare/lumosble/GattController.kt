@@ -10,10 +10,10 @@ import java.util.*
 class GattController : BluetoothGattCallback() {
     enum class UpdateKind{ Write, Read, Notify }
     interface Listener{
-        fun didConnect()
-        fun didDisconnect()
-        fun onRSSIUpdated(rawRSSI: Int)
-        fun onUpdated(uuidStr: String, value: ByteArray, kind:UpdateKind)
+        fun didChangeState(isConnected:Boolean){}
+        fun didDiscovered(){}
+        fun onRSSIUpdated(rawRSSI: Int){}
+        fun onUpdated(uuidStr: String, value: ByteArray, kind:UpdateKind){}
     }
     companion object {
        private const val TAG = "Controller"
@@ -42,7 +42,7 @@ class GattController : BluetoothGattCallback() {
                     //connected
                     gatt?.discoverServices()
                     isConnected = true
-                    listener?.didConnect()
+                    listener?.didChangeState(isConnected)
                 }
                 BluetoothProfile.STATE_DISCONNECTED ->{
                     //disconnected
@@ -59,15 +59,16 @@ class GattController : BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         super.onServicesDiscovered(gatt, status)
-        print(TAG, " === start discovering service === ")
+//        print(TAG, " === start discovering service === ")
         for (service in gatt.services) {
-            print(TAG, "Service is ${service.uuid.short()}")
+//            print(TAG, "Service is ${service.uuid.short()}")
             for (characteristic in service.characteristics) {
                 val uuidStr = characteristic.uuid.short()
                 chMap[uuidStr] = characteristic
-                print(TAG, "character is $uuidStr")
+//                print(TAG, "\t\t ch $uuidStr")
             }
         }
+        listener?.didDiscovered()
         print(TAG, " === end discovering service === ")
     }
 
@@ -161,7 +162,12 @@ class GattController : BluetoothGattCallback() {
 
     private fun popWriteQueue() {
         synchronized(writeQueue) {
-            if(writeQueue.isNotEmpty()) { delay(WRITE_DELAY){ writeQueue.write() } }
+            writeQueue.remove()
+            if(writeQueue.isNotEmpty()){
+                delay(WRITE_DELAY){
+                    writeQueue.write()
+                }
+            }
         }
     }
 
@@ -172,7 +178,8 @@ class GattController : BluetoothGattCallback() {
         gatt?.close()
         gatt = null
         isConnected = false
-        listener?.didDisconnect()
+        listener?.didChangeState(isConnected)
+
     }
 
     private fun refreshDeviceCache(gatt: BluetoothGatt?): Boolean {

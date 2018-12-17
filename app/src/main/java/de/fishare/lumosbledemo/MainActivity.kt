@@ -1,8 +1,10 @@
 package de.fishare.lumosbledemo
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.graphics.Color
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.widget.LinearLayoutManager
@@ -10,21 +12,17 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import de.fishare.lumosble.AvailObj
-import de.fishare.lumosble.CentralManager
-import de.fishare.lumosble.PeriObj
-import de.fishare.lumosble.print
+import de.fishare.lumosble.*
 import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
     private val centralMgr by lazy { CentralManager.getInstance(applicationContext) }
     private lateinit var adapter: ListAdapter
-//    #1 simple string object for list
-//    val list = mutableListOf<String>()
     var avails = mutableListOf<AvailObj>()
     var peris = mutableListOf<PeriObj>()
     lateinit var recyclerView : RecyclerView
     val TAG = "MainActivity"
+    private var isRegistered = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,15 +31,21 @@ class MainActivity : Activity() {
         centralMgr.event = centralEvents
         initListView()
         onRefresh()
-        Handler().postDelayed({
-        }, 2000)
+        addBroadcastReceiver()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        print(TAG, "unregistered")
+        if(isRegistered){unregisterReceiver(receiver)}
     }
 
     private fun onRefresh(){
         avails = centralMgr.avails
         peris  = centralMgr.peris
 
-        print(TAG, "onRefresh size is ${avails.size}")
+        print(TAG, "onRefresh avail size is ${avails.size}")
+        print(TAG, "onRefresh peris size is ${peris.size}")
         avails.forEach { it.listener = availHandler }
         runOnUiThread { adapter.reload() }
     }
@@ -62,55 +66,41 @@ class MainActivity : Activity() {
         override fun onRSSIChanged(rssi: Int, mac: String) {
             val idx = avails.indexOfFirst { it.mac == mac }
             if(idx < avails.size && idx >= 0){
-                val vh = getRenderItem(idx)
+                val vh = getRenderItem(ListAdapter.IndexPath(0, idx))
                 vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
             }
         }
     }
-//     #2 Lets update the view content after a while
-//    fun editView(){
-//        list.add("d")
-//        list.add("e")
-//        adapter.reload()
-//
-//        val vh = getRenderItem(0)
-//        vh?.lblName?.post { vh.lblName.text = "NAMEEEEEEEEEEEEEEEEEEEE 1" }
-//        vh?.lblData?.post { vh.lblData.text = "I found you !" }
-//
-//    }
 
-//    fun setItemViewContent(v:RenderItem, position: Int){
-//        val data = list[position]
-//        val onClick = View.OnClickListener { adapter.listener?.onItemClick(it, position) }
-//
-//        v.lblName.text = data.toString()
-//        v.lblMac.text = position.toString()
-//        v.btnConnect.text = "CONNECT"
-//        v.btnTest.text = "Test"
-//        v.btnConnect.setOnClickListener(onClick)
-//        v.btnTest.setOnClickListener(onClick)
-//    }
-
-    fun setItemViewContent(v:RenderItem, indexPath: ListAdapter.IndexPath){
-        if(indexPath.section == 0){
-//        val data = avails[position]
-             v.lblName.text = "section is ${indexPath.section}"
-            v.lblData.text = "row is $indexPath"
-
-        }else{
-            v.lblData.text = "row is $indexPath"
+    private val periHandler = object : PeriObj.Listener{
+        override fun onRSSIChanged(rssi: Int, mac: String) {
         }
-//        val onClick = View.OnClickListener { adapter.listener?.onItemClick(it, position) }
-//
-//        v.lblMac.text  =  data.mac
-//        v.btnConnect.text = "Connect"
-//        v.lblRSSI.text = data.rssi.toString()
-//        v.btnTest.visibility = View.GONE
-//        v.btnConnect.setOnClickListener(onClick)
-//                return RenderItem(view)
     }
 
-    private fun getRenderItem(position:Int):RenderItem?{
+    fun setItemViewContent(v:RenderItem, indexPath: ListAdapter.IndexPath){
+        if(indexPath.section == 0 && indexPath.row < avails.size){
+            //avail
+            val avl = avails[indexPath.row]
+            v.lblName.text = avl.name
+            v.lblData.text = avl.device.address
+            v.lblMac.text =  avl.mac
+            v.btnConnect.text = "Connect"
+            v.lblRSSI.text = avl.rssi.toString()
+            v.btnConnect.setOnClickListener{ adapter.listener?.onItemClick(it, indexPath) }
+
+        }else if(indexPath.section == 1 && indexPath.row < peris.size){
+            //peri
+            val peri = peris[indexPath.row]
+            v.lblName.text = peri.name
+            v.lblMac.text =  peri.mac
+            v.btnConnect.text = "Disconnect"
+            v.lblRSSI.text = peri.rssi.toString()
+            v.btnConnect.setOnClickListener{ adapter.listener?.onItemClick(it, indexPath) }
+        }
+    }
+
+    private fun getRenderItem(indexPath: ListAdapter.IndexPath):RenderItem?{
+        val position = adapter.getPositionOf(indexPath)
         val view = recyclerView.findViewHolderForLayoutPosition(position)?.itemView
         return if(view != null){ RenderItem(view) } else null
     }
@@ -141,12 +131,13 @@ class MainActivity : Activity() {
         }
 
         adapter.listener = object : ListAdapter.ItemEvent{
-            override fun onItemClick(view: View, position: Int) {
+            override fun onItemClick(view: View, indexPath: ListAdapter.IndexPath) {
                 when(view.id){
                    R.id.btnConnect -> {
-                       centralMgr.connect(avails[position]?.mac)
-                       val vh = getRenderItem(position)
+                       print(TAG, "connect button is click -------------------------------")
+                       val vh = getRenderItem(indexPath)
                        vh?.btnConnect?.post { vh.btnConnect.text = "connecting" }
+                       centralMgr.connect(avails[indexPath.row]?.mac)
                    }
                    R.id.btnTest -> {
 //                       print(TAG, "item is click at $position view is test")
@@ -158,5 +149,30 @@ class MainActivity : Activity() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+    }
+
+    /**
+     *  Broadcast relative
+     *
+     **/
+    private val receiver = object :BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when(intent?.action){
+                CONNECTION_EVENT->{
+                    val mac = intent.getStringExtra("mac") ?: ""
+                    val isConnected = intent.getBooleanExtra("connected", false)
+                    print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
+                    onRefresh()
+                }
+            }
+        }
+    }
+
+    private fun addBroadcastReceiver(){
+        val filter = IntentFilter().apply {
+            addAction(CONNECTION_EVENT)
+        }
+        registerReceiver(receiver, filter)
+        isRegistered = true
     }
 }

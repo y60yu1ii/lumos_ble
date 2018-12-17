@@ -9,12 +9,11 @@ class WriteQueue :LinkedList<WriteQueue.WritingRunnable>(){
     override fun offer(w: WritingRunnable?): Boolean {
         val result = super.offer(w)
         if (size == 1) write()
-        else remove()
         return result
     }
 
     fun write(){
-        element()!!.writeAction()
+        element()?.writeAction()
     }
 
     interface WritingRunnable{
