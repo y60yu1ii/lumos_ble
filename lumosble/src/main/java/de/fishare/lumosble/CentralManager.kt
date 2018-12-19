@@ -8,21 +8,27 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.support.v4.content.ContextCompat
-import java.util.*
-import kotlin.concurrent.schedule
 
 class CentralManager private constructor(val context : Context): PeriObj.StatusEvent {
     interface EventListener{
         fun onRefresh()
         fun didDiscover(availObj: AvailObj)
     }
+
+    interface Setting{
+        fun isValidName(name:String?):Boolean
+        fun getCustomObj(availObj: AvailObj):PeriObj
+    }
+
     companion object : SingletonHolder<CentralManager, Context>(::CentralManager) {
         const val TAG  = "CentralManager"
-        val BLE_PERMIT = android.Manifest.permission.ACCESS_COARSE_LOCATION
+        val BLE_PERMIT = arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
     private var CONNECT_THRESHOLD = -75f
     private var FILTERS: List<String> = listOf()
     var event : EventListener? = null
+    var setting : Setting? = null
     private val dataMgr = DataManager.getInstance(context)
     private val handler = Handler()
 
@@ -38,7 +44,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     private var scanCallback = object : ScanResultCallback {
         override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
 //            print(TAG, "device is ${device.address} and rssi is $RSSI")
-            if(device.name == null) return
+            if(setting?.isValidName(device.name) == false) return
             val avl = avails.firstOrNull { it.mac == device.address }
             if(avl != null){
                 avl.rssi = RSSI
@@ -63,28 +69,15 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        if(Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(avl.name)){
-            val buddyObj = periMap[avl.mac] ?: BuddyObj(avl.mac)
-            if(buddyObj.connectingLock.not()){
-                scanner.pause()
-                handler.post { buddyObj.connect(avl.device, context) }
-                buddyObj.rssi = avl.rssi
-                periMap[avl.mac] = buddyObj
-                avl.listener = null
-                avails.removeAll { it.mac == avl.mac }
-                buddyObj.event = this@CentralManager
-            }
-        }else{
-            val periObj = periMap[avl.mac] ?: PeriObj(avl.mac)
-            if(periObj.connectingLock.not()){
-                scanner.pause()
-                handler.post { periObj.connect(avl.device, context) }
-                periObj.rssi = avl.rssi
-                periMap[avl.mac] = periObj
-                avl.listener = null
-                avails.removeAll { it.mac == avl.mac }
-                periObj.event = this@CentralManager
-            }
+        val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl)!!
+        if(periObj.connectingLock.not()){
+            scanner.pause()
+            handler.post { periObj.connect(avl.device, context) }
+            periObj.rssi = avl.rssi
+            periMap[avl.mac] = periObj
+            avl.listener = null
+            avails.removeAll { it.mac == avl.mac }
+            periObj.event = this@CentralManager
         }
     }
 
@@ -134,7 +127,10 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     }
 
     fun checkPermit(activity: Activity){
-        val granted = ContextCompat.checkSelfPermission(context, BLE_PERMIT) == PackageManager.PERMISSION_GRANTED
+        var granted = false
+        BLE_PERMIT.forEach {
+            granted = ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
         if(granted){
            scan()
         }else{

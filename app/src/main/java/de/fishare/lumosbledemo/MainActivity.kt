@@ -6,16 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.os.Handler
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.fishare.lumosble.*
-import kotlin.concurrent.thread
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
     private val centralMgr by lazy { CentralManager.getInstance(applicationContext) }
     private lateinit var adapter: ListAdapter
     var avails = mutableListOf<AvailObj>()
@@ -31,6 +30,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         centralMgr.checkPermit(this)
         centralMgr.event = centralEvents
+        centralMgr.setting = centralSetting
         initListView()
         onRefresh()
         addBroadcastReceiver()
@@ -51,6 +51,25 @@ class MainActivity : Activity() {
         avails.forEach { it.listener = availHandler }
         peris.forEach  { it.listener = periHandler }
         runOnUiThread { adapter.reload() }
+    }
+
+    private val centralSetting = object :CentralManager.Setting{
+        override fun isValidName(name: String?): Boolean {
+            if(name != null){
+                return Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(name) ||
+                       Regex("(XRING)-[a-zA-Z0-9]{4}").matches(name)
+            }
+            return false
+        }
+
+        override fun getCustomObj(availObj: AvailObj): PeriObj {
+            val mac = availObj.mac
+            return when {
+                Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> BuddyObj(mac)
+                Regex("(XRING)-[a-zA-Z0-9]{4}").matches(availObj.name) -> XringObj(mac)
+                else -> PeriObj(mac)
+            }
+        }
     }
 
     private val centralEvents = object : CentralManager.EventListener{
@@ -104,6 +123,8 @@ class MainActivity : Activity() {
             v.lblName.text = avl.name
             v.lblData.text = avl.device.address
             v.lblMac.text =  avl.mac
+            v.lblEvent.text =  ""
+            v.lblData.text =  ""
             v.btnConnect.text = "Connect"
             v.lblRSSI.text = avl.rssi.toString()
             v.btnConnect.setOnClickListener{ adapter.listener?.onItemClick(it, indexPath) }
@@ -113,6 +134,8 @@ class MainActivity : Activity() {
             val peri = peris[indexPath.row]
             v.lblName.text = peri.name
             v.lblMac.text =  peri.mac
+            v.lblEvent.text =  ""
+            v.lblData.text =  ""
             if(peri.isConnected){
                 v.btnConnect.text = "Disconnect"
             }else{

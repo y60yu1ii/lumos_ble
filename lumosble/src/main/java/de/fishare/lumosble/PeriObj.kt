@@ -39,7 +39,7 @@ open class PeriObj(val mac:String){
             field = value
         }
 
-    fun connect(dev: BluetoothDevice, context: Context){
+    open fun connect(dev: BluetoothDevice, context: Context){
         connectingLock = true
         this.device = dev
         name = dev.name
@@ -55,6 +55,13 @@ open class PeriObj(val mac:String){
 
     open fun authAndSubscribe(){
         connectingLock = false
+        loopReadRSSI()
+    }
+
+    open fun loopReadRSSI(){
+        Timer("RSSI", false).schedule(600){
+            controller?.gatt?.readRemoteRssi()
+        }
     }
 
     open fun dealWithAuthState(auth:Boolean){

@@ -10,14 +10,11 @@ class BuddyObj(mac: String) : PeriObj(mac) {
    }
 
    override fun authAndSubscribe(){
-      super.authAndSubscribe()
       writeTo("ffc1", "PQD".toByteArray())
       writeTo("ffc2", "aaaaaa".toByteArray())
       writeTo("ffc3", byteArrayOf(0x01))
       controller?.subscribeTo("ffe1")
-      Timer("RSSI", false).schedule(600){
-         controller?.gatt?.readRemoteRssi()
-      }
+       super.authAndSubscribe()
    }
 
    override fun getUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
