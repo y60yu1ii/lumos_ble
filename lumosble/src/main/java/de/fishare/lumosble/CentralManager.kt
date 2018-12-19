@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.support.v4.content.ContextCompat
+import java.util.*
+import kotlin.concurrent.schedule
 
 class CentralManager private constructor(val context : Context): PeriObj.StatusEvent {
     interface EventListener{
@@ -35,6 +37,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private var scanCallback = object : ScanResultCallback {
         override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
+//            print(TAG, "device is ${device.address} and rssi is $RSSI")
             if(device.name == null) return
             val avl = avails.firstOrNull { it.mac == device.address }
             if(avl != null){
@@ -58,38 +61,71 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         }
     }
 
-    fun connect(mac:String){
-        val avl = avails.singleOrNull { it.mac == mac }
-        if(avl != null){ connect(avl.device) }
-    }
-
-    private fun connect(device: BluetoothDevice){
+    private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        val periObj = periMap[device.address] ?: PeriObj(device.address)
-        stopScan()
-        if(periObj.isConnecting.not()){
-            handler.post { periObj.connect(device, context) }
-            periMap[device.address] = periObj
-            avails.removeAll { it.mac == device.address }
-            periObj.event = this@CentralManager
+        if(Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(avl.name)){
+            val buddyObj = periMap[avl.mac] ?: BuddyObj(avl.mac)
+            if(buddyObj.connectingLock.not()){
+                scanner.pause()
+                handler.post { buddyObj.connect(avl.device, context) }
+                buddyObj.rssi = avl.rssi
+                periMap[avl.mac] = buddyObj
+                avl.listener = null
+                avails.removeAll { it.mac == avl.mac }
+                buddyObj.event = this@CentralManager
+            }
+        }else{
+            val periObj = periMap[avl.mac] ?: PeriObj(avl.mac)
+            if(periObj.connectingLock.not()){
+                scanner.pause()
+                handler.post { periObj.connect(avl.device, context) }
+                periObj.rssi = avl.rssi
+                periMap[avl.mac] = periObj
+                avl.listener = null
+                avails.removeAll { it.mac == avl.mac }
+                periObj.event = this@CentralManager
+            }
         }
     }
 
+    private fun disconnect(peri: PeriObj){
+        print(TAG, "Disconnecting")
+        peri.markDelete = true
+        peri.event = this@CentralManager
+        peri.disconnect()
+    }
+
+    //Collect all peri event
     override fun onStatusChanged(isConnected: Boolean, periObj: PeriObj) {
-//        print(TAG, "[didConnect] peri is ${periObj.mac} and isConnected $isConnected")
+        print(TAG, "[didConnect] peri is ${periObj.mac} and isConnected $isConnected")
+        if(isConnected.not()){
+            if(periObj.markDelete || periObj.isAuthSuccess.not()){
+                periMap.remove(periObj.mac)
+            }
+        }
+
         context.sendBroadcast(Intent(CONNECTION_EVENT).apply {
             putExtra("mac", periObj.mac)
             putExtra("connected", isConnected)
         })
+        scanner.resume()
     }
-
 
 /**
  *  Public methods
  * */
 
+    fun connect(mac:String){
+        val avl = avails.singleOrNull { it.mac == mac }
+        if(avl != null){ connect(avl) }
+    }
+
+    fun disconnect(mac:String){
+        val peri = periMap[mac]
+        if(peri != null){ disconnect(peri) }
+    }
+
     fun scan(){
-        print(TAG, "Start scanning")
         scanner.startScan()
     }
 

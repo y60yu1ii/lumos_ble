@@ -12,5 +12,4 @@ class RenderItem(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val lblEvent = itemView.lblEvent!!
     val lblData  = itemView.lblData!!
     val btnConnect  = itemView.btnConnect!!
-    val btnTest  = itemView.btnTest!!
 }

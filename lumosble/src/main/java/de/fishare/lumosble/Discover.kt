@@ -22,6 +22,7 @@ interface ScanResultCallback{
 class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Context){
     companion object {
         const val TAG = "Discover"
+        var isKeepScanning = false
     }
     private val scanFilters = ArrayList<ScanFilter>()
     private var scanSettings: ScanSettings? = null
@@ -54,12 +55,27 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
     @TargetApi(Build.VERSION_CODES.M)
     fun startScan() {
         if (adapter.isEnabled) {
+            print(TAG, "Start scanning")
             adapter?.bluetoothLeScanner?.startScan(scanFilters, scanSettings, scanCallback)
         }
     }
 
     fun stopScan(){
+        print(TAG, "Stop scanning")
+        isKeepScanning = false
         bluetoothManager.adapter?.bluetoothLeScanner?.stopScan(scanCallback)
     }
+
+    fun pause(){
+        isKeepScanning = true
+        bluetoothManager.adapter?.bluetoothLeScanner?.stopScan(scanCallback)
+    }
+
+    fun resume(){
+       if(isKeepScanning) {
+           startScan()
+       }
+    }
+
 
 }

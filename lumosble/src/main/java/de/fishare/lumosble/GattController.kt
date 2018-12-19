@@ -11,13 +11,13 @@ class GattController : BluetoothGattCallback() {
     enum class UpdateKind{ Write, Read, Notify }
     interface Listener{
         fun didChangeState(isConnected:Boolean){}
-        fun didDiscovered(){}
+        fun didDiscoverServices(){}
         fun onRSSIUpdated(rawRSSI: Int){}
         fun onUpdated(uuidStr: String, value: ByteArray, kind:UpdateKind){}
     }
     companion object {
        private const val TAG = "Controller"
-       private const val WRITE_DELAY:Float = 0.15f// delay write for 150 ms
+       private const val WRITE_DELAY:Float = 0.17f// delay write for 150 ms
        private const val DESCRIPTOR_STR = "00002902-0000-1000-8000-00805f9b34fb"
     }
 
@@ -68,7 +68,7 @@ class GattController : BluetoothGattCallback() {
 //                print(TAG, "\t\t ch $uuidStr")
             }
         }
-        listener?.didDiscovered()
+        listener?.didDiscoverServices()
         print(TAG, " === end discovering service === ")
     }
 
@@ -126,7 +126,7 @@ class GattController : BluetoothGattCallback() {
         super.onCharacteristicRead(gatt, characteristic, status)
         val value = characteristic?.value?: byteArrayOf()
         val uuidStr = characteristic?.uuid?.short()?:""
-        print(TAG, "[READ FROM] $uuidStr ${value.hex4EasyRead()}")
+        print(TAG, "[READ FROM] $uuidStr ${value.hex4Human()}")
         popWriteQueue()
         listener?.onUpdated(uuidStr, value, UpdateKind.Read)
     }
@@ -135,7 +135,7 @@ class GattController : BluetoothGattCallback() {
         super.onCharacteristicWrite(gatt, characteristic, status)
         val value = characteristic?.value?: byteArrayOf()
         val uuidStr = characteristic?.uuid?.short()?:""
-        print(TAG, "[WRITE TO] $uuidStr with ${value.hex4EasyRead()}")
+        print(TAG, "[WRITE TO] $uuidStr with ${value.hex4Human()}")
         popWriteQueue()
         listener?.onUpdated(uuidStr, value, UpdateKind.Write)
     }
@@ -151,7 +151,7 @@ class GattController : BluetoothGattCallback() {
         super.onCharacteristicChanged(gatt, characteristic)
         val value = characteristic?.value?: byteArrayOf()
         val uuidStr = characteristic?.uuid?.short()?:""
-        print(TAG, "[NOTIFY] $uuidStr notify ${value.hex4EasyRead()}")
+        print(TAG, "[NOTIFY] $uuidStr notify ${value.hex4Human()}")
         listener?.onUpdated(uuidStr, value, UpdateKind.Notify)
     }
 

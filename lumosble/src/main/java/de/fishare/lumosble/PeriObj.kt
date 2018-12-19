@@ -2,9 +2,13 @@ package de.fishare.lumosble
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import java.util.*
 import java.util.logging.Handler
+import kotlin.concurrent.fixedRateTimer
+import kotlin.concurrent.schedule
+import kotlin.properties.Delegates
 
-class PeriObj(val mac:String){
+open class PeriObj(val mac:String){
     var TAG = "Peri"
     interface StatusEvent{
         fun onStatusChanged(isConnected:Boolean, periObj: PeriObj){}
@@ -15,9 +19,16 @@ class PeriObj(val mac:String){
     }
     var device: BluetoothDevice? = null
     var controller: GattController? = null
-    var isConnected = false
-    var isConnecting = false
     var name:String = "name"
+    var connectingLock = false
+    var isConnected = false
+    var markDelete = false
+    var isAuthSuccess : Boolean by Delegates.observable(
+        initialValue = false,
+        onChange = { _, _, new ->
+            dealWithAuthState(new)
+        }
+    )
 
     var listener:Listener?=null
     var event:StatusEvent?=null
@@ -29,7 +40,7 @@ class PeriObj(val mac:String){
         }
 
     fun connect(dev: BluetoothDevice, context: Context){
-        isConnecting = true
+        connectingLock = true
         this.device = dev
         name = dev.name
         controller = GattController().apply {
@@ -38,39 +49,51 @@ class PeriObj(val mac:String){
         }
     }
 
-    private fun customize(){
-        writeTo("ffc1", "PQD".toByteArray())
-        writeTo("ffc2", "aaaaaa".toByteArray())
-        writeTo("ffc3", byteArrayOf(0x01))
-        controller?.subscribeTo("ffe1")
+    open fun disconnect(){
+
     }
 
-    private fun writeTo(uuidStr:String, data:ByteArray){
+    open fun authAndSubscribe(){
+        connectingLock = false
+    }
+
+    open fun dealWithAuthState(auth:Boolean){
+        print(TAG, "authentication status is ${if(auth)"Y" else "N"}")
+    }
+
+    open fun writeTo(uuidStr:String, data:ByteArray){
         controller?.writeTo(uuidStr, data, false)
     }
 
-    private fun writeWithResponce(uuidStr:String, data:ByteArray){
+    open fun writeWithResponse(uuidStr:String, data:ByteArray){
         controller?.writeTo(uuidStr, data, true)
     }
 
+    open fun getUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
+
+    }
+
     private val controlHandler = object : GattController.Listener {
-        override fun didDiscovered() {
-            super.didDiscovered()
-            customize()
+        override fun didDiscoverServices() {
+            authAndSubscribe()
         }
 
         override fun didChangeState(isConnected: Boolean) {
-            super.didChangeState(isConnected)
             print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
-            isConnecting = false
+            this@PeriObj.isConnected = isConnected
             event?.onStatusChanged(isConnected, this@PeriObj)
         }
 
         override fun onRSSIUpdated(rawRSSI: Int) {
+//            print(TAG, "$mac RSSI is $rawRSSI listener $listener")
+            Timer("RSSI", false).schedule(1200){
+                controller?.gatt?.readRemoteRssi()
+            }
+            listener?.onRSSIChanged(rawRSSI, mac)
         }
 
         override fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
+            getUpdated(uuidStr, value, kind)
         }
     }
-
 }

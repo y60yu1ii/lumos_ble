@@ -1,42 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
         android:background="@android:color/white"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:gravity="center"
+        android:layout_height="100dp"
+        android:gravity="start"
         xmlns:android="http://schemas.android.com/apk/res/android">
-        <LinearLayout android:layout_width="120dp"
-                      android:layout_height="match_parent"
-                      android:orientation="vertical"
-                      android:gravity="center"
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:gravity="center"
+                android:id="@+id/layoutStart"
         >
+           <TextView android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:text="name"
+                     android:gravity="start"
+                     android:id="@+id/lblName"
 
-                <TextView android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:text="name"
-                          android:gravity="center"
-                          android:id="@+id/lblName"
-                />
-                <TextView android:layout_width="match_parent"
+           />
+            <TextView android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:text="mac"
-                          android:gravity="center"
-                          android:id="@+id/lblMac"
-                />
+                          android:gravity="start"
+                          android:id="@+id/lblMac"/>
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="rssi"
+                      android:gravity="end"
+                      android:id="@+id/lblRSSI"/>
         </LinearLayout>
-        <LinearLayout android:layout_width="100dp"
-                      android:layout_height="match_parent"
-                      android:orientation="vertical"
-                      android:gravity="center"
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_toEndOf="@+id/layoutStart"
         >
-
-                <TextView android:layout_width="100dp"
-                          android:layout_height="wrap_content"
-                          android:text="rssi"
-                          android:gravity="center"
-                          android:id="@+id/lblRSSI"
-                />
-
                 <TextView android:layout_width="100dp"
                           android:layout_height="wrap_content"
                           android:text="event"
@@ -55,16 +56,17 @@
                       android:orientation="vertical"
                       android:gravity="center"
         >
-        <Button android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:id="@+id/btnConnect"
-        />
-
-        <Button android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:id="@+id/btnTest"
-        />
         </LinearLayout>
-</LinearLayout>
+    <Button
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:background="@android:color/background_dark"
+            android:id="@+id/btnConnect"
+            android:textColor="@android:color/white"
+            android:text="CONNECT"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+    />
+</RelativeLayout>

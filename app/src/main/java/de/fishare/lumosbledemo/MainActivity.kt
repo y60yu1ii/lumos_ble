@@ -22,6 +22,8 @@ class MainActivity : Activity() {
     var peris = mutableListOf<PeriObj>()
     lateinit var recyclerView : RecyclerView
     val TAG = "MainActivity"
+    val AVAIL = 0
+    val PERI  = 1
     private var isRegistered = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +49,7 @@ class MainActivity : Activity() {
         print(TAG, "onRefresh avail size is ${avails.size}")
         print(TAG, "onRefresh peris size is ${peris.size}")
         avails.forEach { it.listener = availHandler }
+        peris.forEach  { it.listener = periHandler }
         runOnUiThread { adapter.reload() }
     }
 
@@ -66,7 +69,7 @@ class MainActivity : Activity() {
         override fun onRSSIChanged(rssi: Int, mac: String) {
             val idx = avails.indexOfFirst { it.mac == mac }
             if(idx < avails.size && idx >= 0){
-                val vh = getRenderItem(ListAdapter.IndexPath(0, idx))
+                val vh = getRenderItem(ListAdapter.IndexPath(AVAIL, idx))
                 vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
             }
         }
@@ -74,6 +77,23 @@ class MainActivity : Activity() {
 
     private val periHandler = object : PeriObj.Listener{
         override fun onRSSIChanged(rssi: Int, mac: String) {
+            val idx = peris.indexOfFirst { it.mac == mac }
+            if(idx < peris.size && idx >= 0){
+                val vh = getRenderItem(ListAdapter.IndexPath(PERI, idx))
+                vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
+            }
+        }
+
+        override fun onUpdated(label: String, value: Any, periObj: PeriObj) {
+            val idx = peris.indexOfFirst { it.mac == periObj.mac }
+            if(idx < peris.size && idx >= 0){
+                val vh = getRenderItem(ListAdapter.IndexPath(PERI, idx))
+                vh?.lblEvent?.post {
+                    if(value is ByteArray){
+                        vh.lblEvent.text = "[NOTIFY] $label [${value.hex4Human()}]"
+                    }
+                }
+            }
         }
     }
 
@@ -93,7 +113,11 @@ class MainActivity : Activity() {
             val peri = peris[indexPath.row]
             v.lblName.text = peri.name
             v.lblMac.text =  peri.mac
-            v.btnConnect.text = "Disconnect"
+            if(peri.isConnected){
+                v.btnConnect.text = "Disconnect"
+            }else{
+                v.btnConnect.text = "Remove"
+            }
             v.lblRSSI.text = peri.rssi.toString()
             v.btnConnect.setOnClickListener{ adapter.listener?.onItemClick(it, indexPath) }
         }
@@ -134,13 +158,23 @@ class MainActivity : Activity() {
             override fun onItemClick(view: View, indexPath: ListAdapter.IndexPath) {
                 when(view.id){
                    R.id.btnConnect -> {
-                       print(TAG, "connect button is click -------------------------------")
+                       print(TAG, "[EVENT] connect button is click ")
                        val vh = getRenderItem(indexPath)
-                       vh?.btnConnect?.post { vh.btnConnect.text = "connecting" }
-                       centralMgr.connect(avails[indexPath.row]?.mac)
-                   }
-                   R.id.btnTest -> {
-//                       print(TAG, "item is click at $position view is test")
+                       when(indexPath.section){
+                           AVAIL ->{
+                             if(indexPath.row < avails.size){
+                                 vh?.btnConnect?.post { vh.btnConnect.text = "connecting" }
+                                 centralMgr.connect(avails[indexPath.row].mac)
+                             }
+                           }
+
+                           PERI ->{
+                               if(indexPath.row < peris.size){
+                                   vh?.btnConnect?.post { vh.btnConnect.text = "disconnecting" }
+                                   centralMgr.disconnect(peris[indexPath.row].mac)
+                               }
+                           }
+                       }
                    }
                 }
             }
