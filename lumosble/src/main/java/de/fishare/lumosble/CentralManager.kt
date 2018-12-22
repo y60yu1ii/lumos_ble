@@ -9,6 +9,13 @@ import android.content.pm.PackageManager
 import android.os.Handler
 import android.support.v4.content.ContextCompat
 
+class CentralManagerBuilder(var serviceUUIDs : List<String> = listOf()){
+    fun build(context: Context):CentralManager{
+        CentralManager.serviceUUIDs = serviceUUIDs
+        return CentralManager.getInstance(context)
+    }
+}
+
 class CentralManager private constructor(val context : Context): PeriObj.StatusEvent {
     interface EventListener{
         fun onRefresh()
@@ -24,9 +31,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         const val TAG  = "CentralManager"
         val BLE_PERMIT = arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION)
+        var serviceUUIDs: List<String> = listOf()
     }
     private var CONNECT_THRESHOLD = -75f
-    private var FILTERS: List<String> = listOf()
     var event : EventListener? = null
     var setting : Setting? = null
     private val dataMgr = DataManager.getInstance(context)
@@ -38,7 +45,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         get() { return  periMap.values.toMutableList() }
 
     private val scanner by lazy {
-        Discover(FILTERS, scanCallback, context )
+        Discover(serviceUUIDs, scanCallback, context )
     }
 
     private var scanCallback = object : ScanResultCallback {

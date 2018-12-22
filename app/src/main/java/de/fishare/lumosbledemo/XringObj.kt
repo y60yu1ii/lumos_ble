@@ -1,6 +1,10 @@
-package de.fishare.lumosble
+package de.fishare.lumosbledemo
 
 import android.os.Handler
+import de.fishare.lumosble.GattController
+import de.fishare.lumosble.PeriObj
+import de.fishare.lumosble.hex4Human
+import de.fishare.lumosble.print
 
 
 class XringObj(mac: String) : PeriObj(mac) {

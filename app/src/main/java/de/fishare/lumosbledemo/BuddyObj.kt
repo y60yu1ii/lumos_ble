@@ -1,7 +1,7 @@
-package de.fishare.lumosble
+package de.fishare.lumosbledemo
 
-import java.util.*
-import kotlin.concurrent.schedule
+import de.fishare.lumosble.GattController
+import de.fishare.lumosble.PeriObj
 
 class BuddyObj(mac: String) : PeriObj(mac) {
 

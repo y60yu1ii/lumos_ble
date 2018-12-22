@@ -19,7 +19,7 @@ interface ScanResultCallback{
 }
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Context){
+class Discover(val uuids:List<String>, callback: ScanResultCallback, val context: Context){
     companion object {
         const val TAG = "Discover"
         var isKeepScanning = false
@@ -36,7 +36,12 @@ class Discover(uuids:List<String>, callback: ScanResultCallback, val context: Co
     }
 
     init {
+        setFilters()
+    }
+
+    private fun setFilters(){
         //after Android 8.0, scanning without filter is no longer available
+        print(TAG, "set uuids are ${uuids}")
         uuids.forEach {
             val filter = ScanFilter.Builder().setServiceUuid(it.toParcelUUID()).build()
             scanFilters.add(filter)

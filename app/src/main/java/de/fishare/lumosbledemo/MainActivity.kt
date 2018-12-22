@@ -1,6 +1,5 @@
 package de.fishare.lumosbledemo
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -15,7 +14,7 @@ import android.view.ViewGroup
 import de.fishare.lumosble.*
 
 class MainActivity : AppCompatActivity() {
-    private val centralMgr by lazy { CentralManager.getInstance(applicationContext) }
+    private val centralMgr by lazy { CentralManagerBuilder(listOf("ffc0")).build(this) }
     private lateinit var adapter: ListAdapter
     var avails = mutableListOf<AvailObj>()
     var peris = mutableListOf<PeriObj>()
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private val centralSetting = object :CentralManager.Setting{
         override fun isValidName(name: String?): Boolean {
             if(name != null){
-                return Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(name) ||
+                return Regex("(Joey|BUDDY)-[a-zA-Z0-9]{3,7}").matches(name) ||
                        Regex("(XRING)-[a-zA-Z0-9]{4}").matches(name)
             }
             return false
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         override fun getCustomObj(availObj: AvailObj): PeriObj {
             val mac = availObj.mac
             return when {
-                Regex("(BUDDY)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> BuddyObj(mac)
+                Regex("(Joey|BUDDY)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> BuddyObj(mac)
                 Regex("(XRING)-[a-zA-Z0-9]{4}").matches(availObj.name) -> XringObj(mac)
                 else -> PeriObj(mac)
             }
