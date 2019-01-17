@@ -7,7 +7,7 @@ import de.fishare.lumosble.hex4Human
 import de.fishare.lumosble.print
 
 
-class XringObj(mac: String) : PeriObj(mac) {
+class UARTObj(mac: String) : PeriObj(mac) {
     var handler = Handler()
 
     override fun authAndSubscribe(){
@@ -32,7 +32,7 @@ class XringObj(mac: String) : PeriObj(mac) {
     override fun getUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
         if(kind == GattController.UpdateKind.Notify){
             print(TAG, "[Notify] is $uuidStr has ${value.hex4Human()}")
-            listener?.onUpdated(uuidStr, value, this@XringObj)
+            listener?.onUpdated(uuidStr, value, this@UARTObj)
         }
     }
 }

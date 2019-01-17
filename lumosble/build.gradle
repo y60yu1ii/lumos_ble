@@ -1,24 +1,23 @@
+apply plugin: 'com.novoda.bintray-release'
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 ext.kotlin_version = '1.3.10'
-ext {
-    bintrayRepo = 'fishare'
-    bintrayName = 'lumos-ble'
-    publishedGroupId = 'de.fishare.lumosble'
-    libraryName = 'LumosBLE'
-    artifact = 'lumosble'
-    libraryDescription = 'A simple library that demostrates ble.'
-    siteUrl = 'https://'
-    gitUrl = 'https://gitlab.com/y60yu1ii/lumos-ble.git/'
-    libraryVersion = '0.0.2'
-    developerId = 'y60yu1ii'
-    developerName = 'YaoYu Li'
-    developerEmail = 'y60yu1ii@gmail.com'
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
+publish {
 
+    def groupProjectID = 'de.fishare.lumosble'
+    def artifactProjectID = 'lumos-ble'
+    def publishVersionID = '0.0.3'
+
+    userOrg = 'y60yu1ii'
+    repoName = 'fishare'
+    groupId = groupProjectID
+    artifactId = artifactProjectID
+    publishVersion = publishVersionID
+    desc = 'A simple library that demonstrates ble.'
+    website = 'https://github.com/y60yu1ii/lumos_ble'
+
+}
 
 android {
     compileSdkVersion 28
@@ -48,5 +47,3 @@ dependencies {
     implementation 'com.android.support:support-v4:28.0.0'
 }
 
-apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/bintrayv1.gradle'

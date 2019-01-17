@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -60,9 +59,7 @@ class MainActivity : AppCompatActivity() {
     private val centralSetting = object :CentralManager.Setting{
         override fun isValidName(name: String?): Boolean {
             if(name != null){
-                return Regex("(Joey|BUDDY)-[a-zA-Z0-9]{3,7}").matches(name) ||
-                       Regex("(XRING)-[a-zA-Z0-9]{4}").matches(name) ||
-                       Regex("(S)[a-zA-Z0-9]{4}").matches(name)
+                return Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(name)
             }
             return false
         }
@@ -70,8 +67,7 @@ class MainActivity : AppCompatActivity() {
         override fun getCustomObj(availObj: AvailObj): PeriObj {
             val mac = availObj.mac
             return when {
-                Regex("(Joey|BUDDY)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> BuddyObj(mac)
-                Regex("(XRING)-[a-zA-Z0-9]{4}").matches(availObj.name) -> XringObj(mac)
+                Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> SampleObj(mac)
                 else -> PeriObj(mac)
             }
         }
