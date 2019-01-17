@@ -13,8 +13,8 @@ fun UUID.short():String {return this.toString().substring(4, 8)}
 fun String.getUUID(): UUID {return UUID.fromString("0000$this-0000-1000-8000-00805f9b34fb")}
 fun String.toParcelUUID(): ParcelUuid {return ParcelUuid.fromString("0000$this-0000-1000-8000-00805f9b34fb")}
 
-fun print(tag: String, log:Any) { if (BuildConfig.DEBUG) Log.e(tag, log.toString()) }
-fun print(log:Any) { if (BuildConfig.DEBUG) Log.e("DEBUG", log.toString()) }
+fun print(tag: String, log:Any) {Log.e(tag, log.toString()) }
+fun print(log:Any) {Log.e("DEBUG", log.toString()) }
 
 fun ByteArray.hex4Human():String{
     val sb = StringBuilder()

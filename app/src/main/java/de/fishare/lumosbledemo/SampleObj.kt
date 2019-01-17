@@ -4,7 +4,7 @@ import de.fishare.lumosble.GattController
 import de.fishare.lumosble.PeriObj
 
 class SampleObj(mac: String) : PeriObj(mac) {
-
+   override var TAG = "SampleObj"
    override fun disconnect() {
       writeWithResponse("xx", byteArrayOf(0x00))
    }

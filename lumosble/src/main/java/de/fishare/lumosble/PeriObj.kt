@@ -9,7 +9,7 @@ import kotlin.concurrent.schedule
 import kotlin.properties.Delegates
 
 open class PeriObj(val mac:String){
-    var TAG = "Peri"
+    open var TAG = "Peri"
     interface StatusEvent{
         fun onStatusChanged(isConnected:Boolean, periObj: PeriObj){}
     }

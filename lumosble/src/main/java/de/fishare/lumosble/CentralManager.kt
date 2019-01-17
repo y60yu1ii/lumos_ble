@@ -25,6 +25,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     interface Setting{
         fun isValidName(name:String?):Boolean
         fun getCustomObj(availObj: AvailObj):PeriObj
+        fun getCustomAvl(device: BluetoothDevice):AvailObj
     }
 
     companion object : SingletonHolder<CentralManager, Context>(::CentralManager) {
@@ -55,8 +56,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
             val avl = avails.firstOrNull { it.mac == device.address }
             if(avl != null){
                 avl.rssi = RSSI
+                avl.rawData = data
             }else if(RSSI > CONNECT_THRESHOLD){
-                addAvail(device)
+                addAvail(device, data)
             }
         }
     }
@@ -65,8 +67,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         loadHistory()
     }
 
-    private fun addAvail(device:BluetoothDevice){
-        val avl = AvailObj(device)
+    private fun addAvail(device:BluetoothDevice, rawData:ByteArray){
+        val avl = setting?.getCustomAvl(device) ?: AvailObj(device)
+        avl.rawData = rawData
         avails.singleOrNull { it.mac == device.address } ?: run {
             print(TAG, "[ADD TO AVAIL] count ${avails.size} mac is ${avl.mac}")
             avails.add(avl)
