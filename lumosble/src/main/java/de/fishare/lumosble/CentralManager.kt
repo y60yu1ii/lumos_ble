@@ -84,7 +84,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl) ?: PeriObj(avl.mac)
+        val periObj = periMap[avl.mac] ?: setting.getCustomObj(avl) ?: PeriObj(avl.mac)
         if(periObj.connectingLock.not()){
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
