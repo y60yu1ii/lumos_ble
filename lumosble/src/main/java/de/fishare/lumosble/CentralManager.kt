@@ -18,14 +18,13 @@ class CentralManagerBuilder(var serviceUUIDs : List<String> = listOf()){
 
 class CentralManager private constructor(val context : Context): PeriObj.StatusEvent {
     interface EventListener{
-        fun onRefresh()
         fun didDiscover(availObj: AvailObj)
     }
 
     interface Setting{
-        fun isValidName(name:String?):Boolean
-        fun getCustomObj(availObj: AvailObj):PeriObj
-        fun getCustomAvl(device: BluetoothDevice):AvailObj
+        fun getNameRule():String{return ".*?"}//Match everything
+        fun getCustomObj(availObj: AvailObj):PeriObj{ return PeriObj(availObj.mac) }
+        fun getCustomAvl(device: BluetoothDevice):AvailObj{ return AvailObj(device) }
     }
 
     companion object : SingletonHolder<CentralManager, Context>(::CentralManager) {
@@ -35,8 +34,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         var serviceUUIDs: List<String> = listOf()
     }
     private var CONNECT_THRESHOLD = -75f
+    private var OUTDATE_PERIOD = 10// in second
     var event : EventListener? = null
-    var setting : Setting? = null
+    var setting : Setting = object :Setting{}
     private val dataMgr = DataManager.getInstance(context)
     private val handler = Handler()
 
@@ -52,7 +52,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     private var scanCallback = object : ScanResultCallback {
         override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
 //            print(TAG, "device is ${device.address} and rssi is $RSSI")
-            if(setting?.isValidName(device.name) == false) return
+            if(!isValidName(device.name)) return
             val avl = avails.firstOrNull { it.mac == device.address }
             if(avl != null){
                 avl.rssi = RSSI
@@ -63,12 +63,17 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         }
     }
 
+    fun isValidName(name:String?):Boolean{
+        return if(name == null) false
+        else Regex(setting.getNameRule()).matches(name)
+    }
+
     init {
         loadHistory()
     }
 
     private fun addAvail(device:BluetoothDevice, rawData:ByteArray){
-        val avl = setting?.getCustomAvl(device) ?: AvailObj(device)
+        val avl = setting.getCustomAvl(device)
         avl.rawData = rawData
         avails.singleOrNull { it.mac == device.address } ?: run {
             print(TAG, "[ADD TO AVAIL] count ${avails.size} mac is ${avl.mac}")
@@ -79,7 +84,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl)!!
+        val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl) ?: PeriObj(avl.mac)
         if(periObj.connectingLock.not()){
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
@@ -91,9 +96,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         }
     }
 
-    private fun disconnect(peri: PeriObj){
+    private fun disconnect(peri: PeriObj, isRemove: Boolean){
         print(TAG, "Disconnecting")
-        peri.markDelete = true
+        peri.markDelete = isRemove
         peri.event = this@CentralManager
         peri.disconnect()
     }
@@ -125,7 +130,16 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     fun disconnect(mac:String){
         val peri = periMap[mac]
-        if(peri != null){ disconnect(peri) }
+        if(peri != null){
+            disconnect(peri, false)
+        }
+    }
+
+    fun remove(mac:String){
+        val peri = periMap[mac]
+        if(peri != null){
+            disconnect(peri, isRemove = true)
+        }
     }
 
     fun scan(){
@@ -134,6 +148,15 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     fun stopScan(){
         scanner.stopScan()
+    }
+
+    fun clearAvl(){
+        avails.removeAll{true}.apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
+    }
+
+    fun clearOutdateAvl(){
+        avails.removeAll { (System.currentTimeMillis() - it.lastUpdatTime) > OUTDATE_PERIOD * 1000 }
+            .apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
     }
 
     fun checkPermit(activity: Activity){
@@ -151,20 +174,15 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     }
 
     fun refreshBluetoothState(){
-//        print(TAG, "refresh turned off ble")
+        //force re-open bluetooth after getting permission to start scanning
         BluetoothAdapter.getDefaultAdapter()?.disable()
-        delay(1f){
-//            print(TAG, "refresh turned on ble")
-            BluetoothAdapter.getDefaultAdapter()?.enable()
-        }
-        delay(2f){
-            scan()
-        }
+        delay(1f){ BluetoothAdapter.getDefaultAdapter()?.enable() }
+        delay(2f){ scan() }
     }
 
     private fun loadHistory(){
         dataMgr.getHistory().forEach {
-                mac -> periMap[mac] = PeriObj(mac).apply { event = this@CentralManager }
+           mac -> periMap[mac] = PeriObj(mac).apply { event = this@CentralManager }
         }
     }
 

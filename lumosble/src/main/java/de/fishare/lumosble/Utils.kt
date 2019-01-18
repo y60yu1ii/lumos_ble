@@ -7,6 +7,7 @@ import android.util.Log
 import java.util.*
 
 val CONNECTION_EVENT = "de.fishare.connection"
+val REFRESH_EVENT = "de.fishare.refresh"
 
 
 fun UUID.short():String {return this.toString().substring(4, 8)}
@@ -36,7 +37,6 @@ fun Intent.addExtra(key: String, value: Any?) {
 
 fun parseScanRecord(scanRecord: ByteArray): Map<Int,ByteArray> {
     val dict = mutableMapOf<Int, ByteArray>()
-    val rawData: ByteArray?
     var index = 0
     while (index < scanRecord.size) {
         val length = scanRecord[index++].toInt()

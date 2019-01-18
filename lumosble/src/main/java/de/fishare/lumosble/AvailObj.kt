@@ -11,6 +11,7 @@ open class AvailObj(val device: BluetoothDevice){
 
     var name:String = device.name ?: ""
     var mac:String  = device.address
+    var lastUpdatTime:Long = 0
     var rawData:ByteArray = byteArrayOf()
         set(value) {
             onRawUpdate(value)
@@ -26,5 +27,6 @@ open class AvailObj(val device: BluetoothDevice){
                 listener?.onRSSIChanged(rssi, mac)
             }
             field = value
+            lastUpdatTime = System.currentTimeMillis()
         }
 }

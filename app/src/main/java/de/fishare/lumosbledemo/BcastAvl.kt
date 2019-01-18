@@ -8,6 +8,6 @@ import de.fishare.lumosble.print
 class BcastAvl(device: BluetoothDevice) : AvailObj(device) {
     override var TAG = "BcastAvl"
     override fun onRawUpdate(data: ByteArray) {
-        print(TAG, "on Raw Update " + data.hex4Human())
+//        print(TAG, "on Raw Update " + data.hex4Human())
     }
 }

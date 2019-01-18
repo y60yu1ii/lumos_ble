@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -20,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     var avails = mutableListOf<AvailObj>()
     var peris = mutableListOf<PeriObj>()
     lateinit var recyclerView : RecyclerView
+    lateinit var swipeLayOut : SwipeRefreshLayout
     val TAG = "MainActivity"
     val AVAIL = 0
     val PERI  = 1
@@ -48,7 +50,10 @@ class MainActivity : AppCompatActivity() {
         print(TAG, "onRefresh peris size is ${peris.size}")
         avails.forEach { it.listener = availHandler }
         peris.forEach  { it.listener = periHandler }
-        runOnUiThread { adapter.reload() }
+        runOnUiThread {
+            adapter.reload()
+            swipeLayOut.isRefreshing = false
+        }
     }
 
     private fun setUpCentralManager(){
@@ -58,31 +63,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val centralSetting = object :CentralManager.Setting{
+        override fun getNameRule(): String {
+//            return "(SAMPLE)-[a-zA-Z0-9]{3,7}"
+            return ".*?"
+        }
+
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
             return BcastAvl(device)
         }
 
-        override fun isValidName(name: String?): Boolean {
-//            if(name != null){
-//                return Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(name)
-//            }
-            return true
-        }
-
         override fun getCustomObj(availObj: AvailObj): PeriObj {
-            val mac = availObj.mac
+            val mac  = availObj.mac
+            val name = availObj.name
             return when {
-                Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(availObj.name) -> SampleObj(mac)
+                Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(name) -> SampleObj(mac)
                 else -> PeriObj(mac)
             }
         }
     }
 
     private val centralEvents = object : CentralManager.EventListener{
-        override fun onRefresh() {
-            onRefresh()
-        }
-
         override fun didDiscover(availObj: AvailObj) {
             availObj.listener = availHandler
             runOnUiThread { adapter.reload() }
@@ -186,8 +186,12 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-//        recyclerView.layoutManager = GridLayoutManager(this, 2)
         recyclerView.adapter = adapter
+
+        swipeLayOut = findViewById(R.id.swipeRefreshLayout)
+        swipeLayOut.setOnRefreshListener{
+            centralMgr.clearAvl()
+        }
     }
 
     private fun setItemViewContent(v:RenderItem, indexPath: ListAdapter.IndexPath){
@@ -233,12 +237,16 @@ class MainActivity : AppCompatActivity() {
                     print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
                     onRefresh()
                 }
+                REFRESH_EVENT->{ onRefresh() }
             }
         }
     }
 
     private fun addBroadcastReceiver(){
-        val filter = IntentFilter().apply { addAction(CONNECTION_EVENT) }
+        val filter = IntentFilter().apply {
+            addAction(CONNECTION_EVENT)
+            addAction(REFRESH_EVENT)
+        }
         registerReceiver(receiver, filter)
         isRegistered = true
     }
