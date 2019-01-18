@@ -61,6 +61,12 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
                 addAvail(device, data)
             }
         }
+
+        override fun onLost(device: BluetoothDevice, RSSI: Int) {
+            print(TAG, "device LOST is ${device.address} and rssi is $RSSI")
+            avails.removeAll { it.mac == device.address }
+                .apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
+        }
     }
 
     fun isValidName(name:String?):Boolean{
@@ -93,12 +99,14 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
             avl.listener = null
             avails.removeAll { it.mac == avl.mac }
             periObj.event = this@CentralManager
+            DataManager.getInstance(context).addToHistory(avl.mac)
         }
     }
 
     private fun disconnect(peri: PeriObj, isRemove: Boolean){
         print(TAG, "Disconnecting")
         peri.markDelete = isRemove
+        if(isRemove){ DataManager.getInstance(context).removeFromHistory(peri.mac) }
         peri.event = this@CentralManager
         peri.disconnect()
     }

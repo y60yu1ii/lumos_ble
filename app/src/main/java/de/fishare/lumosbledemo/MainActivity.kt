@@ -16,7 +16,7 @@ import android.view.ViewGroup
 import de.fishare.lumosble.*
 
 class MainActivity : AppCompatActivity() {
-    private val centralMgr by lazy { CentralManagerBuilder(listOf()).build(this) }
+    private val centralMgr by lazy { CentralManagerBuilder(listOf("1802")).build(this) }
     private lateinit var adapter: ListAdapter
     var avails = mutableListOf<AvailObj>()
     var peris = mutableListOf<PeriObj>()
@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
 
     private val centralSetting = object :CentralManager.Setting{
         override fun getNameRule(): String {
-//            return "(SAMPLE)-[a-zA-Z0-9]{3,7}"
             return ".*?"
         }
 

@@ -16,6 +16,7 @@ enum class ScanType(val i:Int) {
 
 interface ScanResultCallback{
     fun onDiscover(device: BluetoothDevice, RSSI:Int, data:ByteArray, record:Any?)
+    fun onLost(device: BluetoothDevice, RSSI:Int){}
 }
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -46,13 +47,24 @@ class Discover(val uuids:List<String>, callback: ScanResultCallback, val context
             val filter = ScanFilter.Builder().setServiceUuid(it.toParcelUUID()).build()
             scanFilters.add(filter)
         }
-        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            scanSettingsBuilder.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+            .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+        }
+
         scanSettings = scanSettingsBuilder.build()
     }
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(callbackType == ScanSettings.CALLBACK_TYPE_MATCH_LOST){
+                    callback.onLost(result.device, result.rssi)
+                }
+            }
             callback.onDiscover(result.device, result.rssi, result.scanRecord!!.bytes, result)
         }
     }
