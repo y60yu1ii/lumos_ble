@@ -53,6 +53,13 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         override fun onDiscover(device: BluetoothDevice, RSSI: Int, data: ByteArray, record: Any?) {
 //            print(TAG, "device is ${device.address} and rssi is $RSSI")
             if(!isValidName(device.name)) return
+            val peri = periMap[device.address]
+            if(peri != null && !peri.markDelete){
+                val avl = setting.getCustomAvl(device)
+                avl.rawData = data
+                connect(avl)
+                return
+            }
             val avl = avails.firstOrNull { it.mac == device.address }
             if(avl != null){
                 avl.rssi = RSSI
@@ -106,9 +113,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     private fun disconnect(peri: PeriObj, isRemove: Boolean){
         print(TAG, "Disconnecting")
         peri.markDelete = isRemove
-        if(isRemove){ DataManager.getInstance(context).removeFromHistory(peri.mac) }
         peri.event = this@CentralManager
         peri.disconnect()
+        if(isRemove){ DataManager.getInstance(context).removeFromHistory(peri.mac) }
     }
 
     //Collect all peri event

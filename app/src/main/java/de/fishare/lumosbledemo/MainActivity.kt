@@ -173,8 +173,8 @@ class MainActivity : AppCompatActivity() {
 
                            PERI ->{
                                if(indexPath.row < peris.size){
-                                   vh?.btnConnect?.post { vh.btnConnect.text = "disconnecting" }
-                                   centralMgr.disconnect(peris[indexPath.row].mac)
+                                   vh?.btnConnect?.post { vh.btnConnect.text = "removing" }
+                                   centralMgr.remove(peris[indexPath.row].mac)
                                }
                            }
                        }

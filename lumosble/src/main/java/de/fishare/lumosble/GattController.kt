@@ -28,7 +28,7 @@ class GattController : BluetoothGattCallback() {
     private var chMap : MutableMap<String, BluetoothGattCharacteristic> = mutableMapOf()
     var listener: Listener?=null
 
-    public fun disconenct(){
+    fun disconnect(){
         gatt?.disconnect()
         gatt?.close()
     }

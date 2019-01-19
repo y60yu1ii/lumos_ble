@@ -50,7 +50,8 @@ open class PeriObj(val mac:String){
     }
 
     open fun disconnect(){
-
+        controller?.disconnect()
+        event?.onStatusChanged(false, this)
     }
 
     open fun authAndSubscribe(){

@@ -26,6 +26,7 @@ class DataManager private constructor(context : Context) {
     }
 
     fun removeFromHistory(mac: String) {
+        print(TAG, "remove mac $mac")
         val history = HashSet<String>(defaults.getStringSet(HISTORY, HashSet<String>()))
         val copy = HashSet(history)
         copy.remove(mac)
