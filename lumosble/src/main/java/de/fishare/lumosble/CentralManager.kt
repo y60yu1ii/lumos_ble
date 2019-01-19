@@ -23,7 +23,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     interface Setting{
         fun getNameRule():String{return ".*?"}//Match everything
-        fun getCustomObj(availObj: AvailObj):PeriObj{ return PeriObj(availObj.mac) }
+        fun getCustomObj(mac: String, name:String):PeriObj{ return PeriObj(mac) }
         fun getCustomAvl(device: BluetoothDevice):AvailObj{ return AvailObj(device) }
     }
 
@@ -36,7 +36,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     private var CONNECT_THRESHOLD = -75f
     private var OUTDATE_PERIOD = 10// in second
     var event : EventListener? = null
-    var setting : Setting = object :Setting{}
+    lateinit var setting : Setting
     private val dataMgr = DataManager.getInstance(context)
     private val handler = Handler()
 
@@ -81,10 +81,6 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         else Regex(setting.getNameRule()).matches(name)
     }
 
-    init {
-        loadHistory()
-    }
-
     private fun addAvail(device:BluetoothDevice, rawData:ByteArray){
         val avl = setting.getCustomAvl(device)
         avl.rawData = rawData
@@ -97,7 +93,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        val periObj = periMap[avl.mac] ?: setting.getCustomObj(avl) ?: PeriObj(avl.mac)
+        val periObj = periMap[avl.mac] ?: setting.getCustomObj(avl.mac, avl.name) ?: PeriObj(avl.mac)
         if(periObj.connectingLock.not()){
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
@@ -107,6 +103,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
             avails.removeAll { it.mac == avl.mac }
             periObj.event = this@CentralManager
             DataManager.getInstance(context).addToHistory(avl.mac)
+            DataManager.getInstance(context).saveProfile(avl.mac, "name", avl.name)
         }
     }
 
@@ -195,9 +192,11 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         delay(2f){ scan() }
     }
 
-    private fun loadHistory(){
+    fun loadHistory(){
         dataMgr.getHistory().forEach {
-           mac -> periMap[mac] = PeriObj(mac).apply { event = this@CentralManager }
+           mac ->
+            val name = DataManager.getInstance(context).loadProfileInString(mac, "name")
+            periMap[mac] = setting.getCustomObj(mac, name).apply { event = this@CentralManager }
         }
     }
 

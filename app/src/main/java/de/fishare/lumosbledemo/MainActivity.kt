@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
@@ -57,25 +58,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpCentralManager(){
-        centralMgr.checkPermit(this)
         centralMgr.event = centralEvents
         centralMgr.setting = centralSetting
+        centralMgr.loadHistory()
+        centralMgr.checkPermit(this)
     }
 
     private val centralSetting = object :CentralManager.Setting{
         override fun getNameRule(): String {
-            return ".*?"
+            return "(AMB)-[a-zA-Z0-9]{4}"
         }
 
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
             return BcastAvl(device)
         }
 
-        override fun getCustomObj(availObj: AvailObj): PeriObj {
-            val mac  = availObj.mac
-            val name = availObj.name
+        override fun getCustomObj(mac: String, name:String): PeriObj {
+            print(TAG, "GET Custom obj with name is $name")
             return when {
-                Regex("(SAMPLE)-[a-zA-Z0-9]{3,7}").matches(name) -> SampleObj(mac)
+                Regex("(AMB)-[a-zA-Z0-9]{4}").matches(name) -> AmbObj(mac)
                 else -> PeriObj(mac)
             }
         }
@@ -110,6 +111,10 @@ class MainActivity : AppCompatActivity() {
             vh?.lblEvent?.post {
                 if(value is ByteArray){
                     vh.lblEvent.text = "[NOTIFY] $label [${value.hex4Human()}]"
+                }else{
+                    val myRed = (value as Int).remap(50, 1000, 0, 255)
+                    vh.lblEvent.text = "[NOTIFY] $label [${value}] color is ${myRed}"
+                    vh.lblEvent.setBackgroundColor(Color.rgb(myRed, 200, 200))
                 }
             }
         }

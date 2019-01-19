@@ -3,11 +3,12 @@ package de.fishare.lumosble
 import android.content.Context
 import android.content.SharedPreferences
 
-class DataManager private constructor(context : Context) {
+class DataManager private constructor(var context : Context) {
     companion object : SingletonHolder<DataManager, Context>(::DataManager) {
         const val TAG = "DataManager"
         const val GLOBAL = "global"
         const val HISTORY = "history"
+        const val NULL = "string.null"
     }
 
     private val defaults: SharedPreferences by lazy{
@@ -40,5 +41,17 @@ class DataManager private constructor(context : Context) {
         val history = HashSet<String>(defaults.getStringSet(HISTORY, HashSet<String>()))
         print(TAG, "history has $history")
         return history.toList()
+    }
+
+    fun saveProfile(mac:String, para:String, value:Any){
+        context.getSharedPreferences(mac, Context.MODE_PRIVATE).edit().also{
+            if(value is String) {
+                it.putString(para, value)
+            }
+        }.apply()
+    }
+
+    fun loadProfileInString(mac:String, para: String):String{
+        return context.getSharedPreferences(mac, Context.MODE_PRIVATE).getString(para, NULL) ?: NULL
     }
 }

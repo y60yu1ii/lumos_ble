@@ -66,7 +66,7 @@ class GattController : BluetoothGattCallback() {
             for (characteristic in service.characteristics) {
                 val uuidStr = characteristic.uuid.short()
                 chMap[uuidStr] = characteristic
-                print(TAG, "\t\t ch ${uuidStr}")
+                print(TAG, "\t\t ch ${characteristic.uuid}")
             }
         }
         print(TAG, " === end discovering service === ")
@@ -152,7 +152,7 @@ class GattController : BluetoothGattCallback() {
         super.onCharacteristicChanged(gatt, characteristic)
         val value = characteristic?.value?: byteArrayOf()
         val uuidStr = characteristic?.uuid?.short()?:""
-        print(TAG, "[NOTIFY] $uuidStr notify ${value.hex4Human()}")
+//        print(TAG, "[NOTIFY] $uuidStr notify ${value.hex4Human()}")
         listener?.onUpdated(uuidStr, value, UpdateKind.Notify)
     }
 

@@ -5,6 +5,7 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
 import java.util.*
+import kotlin.experimental.and
 
 val CONNECTION_EVENT = "de.fishare.connection"
 val REFRESH_EVENT = "de.fishare.refresh"
@@ -21,6 +22,22 @@ fun ByteArray.hex4Human():String{
     val sb = StringBuilder()
     for (b in this) sb.append(String.format("%02X ", b))
     return sb.toString()
+}
+
+fun ByteArray.to2Int(): Int =
+    (this[1].toInt() shl 8) or (this[0].toInt() and 0xFF)
+fun ByteArray.to2unsignedInt(): Int =
+    (this[1].toInt() and 0xFF) shl 8 or (this[0].toInt() and 0xFF)
+
+fun ByteArray.to4Int(): Int =
+    (this[3].toInt() shl 24) or (this[2].toInt() and 0xFF) or (this[1].toInt() shl 8) or (this[0].toInt() and 0xFF)
+
+fun ByteArray.to4unsignedInt(): Long =
+    ((this[3].toInt() and 0xFF) shl 24 or (this[2].toInt() and 0xFF) shl 16 or (this[1].toInt() and 0xFF) shl 8 or (this[0].toInt() and 0xFF)).toLong()
+
+fun Int.remap(fromX:Int, fromY:Int, toX:Int, toY:Int):Int{
+    val r =  this *  (toY - toX) / (fromY - fromX)
+    return if(r > toY) toY else if(r < toX) toX else r
 }
 
 fun Intent.addExtra(key: String, value: Any?) {
