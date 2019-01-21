@@ -65,9 +65,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val centralSetting = object :CentralManager.Setting{
-        override fun getNameRule(): String {
-            return "(AMB)-[a-zA-Z0-9]{4}"
-        }
+//        override fun getNameRule(): String {
+//            return "(AMB)-[a-zA-Z0-9]{4}"
+//        }
 
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
             return BcastAvl(device)
