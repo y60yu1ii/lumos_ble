@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
-import android.support.v4.content.ContextCompat
+import android.support.v4.app.ActivityCompat
 
 class CentralManagerBuilder(var serviceUUIDs : List<String> = listOf()){
     fun build(context: Context):CentralManager{
@@ -174,7 +174,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     fun checkPermit(activity: Activity){
         var granted = false
         BLE_PERMIT.forEach {
-            granted = ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
         if(granted){
            scan()

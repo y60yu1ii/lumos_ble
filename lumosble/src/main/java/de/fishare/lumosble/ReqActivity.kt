@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import de.fishare.lumosble.CentralManager.Companion.BLE_PERMIT
 
 class ReqActivity : Activity() {
@@ -20,7 +19,7 @@ class ReqActivity : Activity() {
     private fun checkPermission(){
         var granted = false
         BLE_PERMIT.forEach {
-            granted = ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            granted = ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
         }
         if(granted) {
             CentralManager.getInstance(applicationContext).refreshBluetoothState()
