@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.support.v4.app.ActivityCompat
 
@@ -174,7 +175,9 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     fun checkPermit(activity: Activity){
         var granted = false
         BLE_PERMIT.forEach {
-            granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }
         }
         if(granted){
            scan()

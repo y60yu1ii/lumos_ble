@@ -2,6 +2,7 @@ package de.fishare.lumosble
 
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import de.fishare.lumosble.CentralManager.Companion.BLE_PERMIT
@@ -19,12 +20,16 @@ class ReqActivity : Activity() {
     private fun checkPermission(){
         var granted = false
         BLE_PERMIT.forEach {
-            granted = ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                granted = checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
+            }
         }
         if(granted) {
             CentralManager.getInstance(applicationContext).refreshBluetoothState()
         }else{
-            ActivityCompat.requestPermissions(this, CentralManager.BLE_PERMIT, BLE_REQ)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(CentralManager.BLE_PERMIT, BLE_REQ)
+            }
         }
     }
 
