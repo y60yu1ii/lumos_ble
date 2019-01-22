@@ -1,0 +1,3 @@
+#!/bin/zsh
+gradle clean build bintrayUpload -PbintrayUser=y60yu1ii -PbintrayKey=615105d9d756a5e51236846bee267e177d201f83 -PdryRun=false
+
