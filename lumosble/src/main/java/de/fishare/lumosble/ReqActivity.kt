@@ -20,16 +20,12 @@ class ReqActivity : Activity() {
     private fun checkPermission(){
         var granted = false
         BLE_PERMIT.forEach {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                granted = checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
-            }
+            granted = ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
         }
         if(granted) {
             CentralManager.getInstance(applicationContext).refreshBluetoothState()
         }else{
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(CentralManager.BLE_PERMIT, BLE_REQ)
-            }
+            ActivityCompat.requestPermissions(this, CentralManager.BLE_PERMIT, BLE_REQ)
         }
     }
 
