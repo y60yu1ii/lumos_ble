@@ -22,7 +22,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     }
 
     interface Setting{
-        fun getNameRule():String{return ".*?"}//Match everything
+        fun getNameRule():String{return REGX_ALL}//Match everything
         fun getCustomObj(mac: String, name:String):PeriObj{ return PeriObj(mac) }
         fun getCustomAvl(device: BluetoothDevice):AvailObj{ return AvailObj(device) }
     }
@@ -32,11 +32,12 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         val BLE_PERMIT = arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION)
         var serviceUUIDs: List<String> = listOf()
+        const val REGX_ALL = ".*?"
     }
     private var CONNECT_THRESHOLD = -75f
     private var OUTDATE_PERIOD = 10// in second
     var event : EventListener? = null
-    lateinit var setting : Setting
+    var setting : Setting? = null
     private val dataMgr = DataManager.getInstance(context)
     private val handler = Handler()
 
@@ -55,7 +56,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
             if(!isValidName(device.name)) return
             val peri = periMap[device.address]
             if(peri != null && !peri.markDelete){
-                val avl = setting.getCustomAvl(device)
+                val avl = setting?.getCustomAvl(device) ?: AvailObj(device)
                 avl.rawData = data
                 connect(avl)
                 return
@@ -78,11 +79,11 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     fun isValidName(name:String?):Boolean{
         return if(name == null) false
-        else Regex(setting.getNameRule()).matches(name)
+        else Regex(setting?.getNameRule() ?: REGX_ALL).matches(name)
     }
 
     private fun addAvail(device:BluetoothDevice, rawData:ByteArray){
-        val avl = setting.getCustomAvl(device)
+        val avl = setting?.getCustomAvl(device) ?: AvailObj(device)
         avl.rawData = rawData
         avails.singleOrNull { it.mac == device.address } ?: run {
             print(TAG, "[ADD TO AVAIL] count ${avails.size} mac is ${avl.mac}")
@@ -93,7 +94,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
 
     private fun connect(avl: AvailObj){
         print(TAG, "Connecting")
-        val periObj = periMap[avl.mac] ?: setting.getCustomObj(avl.mac, avl.name) ?: PeriObj(avl.mac)
+        val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl.mac, avl.name) ?: PeriObj(avl.mac)
         if(periObj.connectingLock.not()){
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
@@ -196,7 +197,8 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         dataMgr.getHistory().forEach {
            mac ->
             val name = DataManager.getInstance(context).loadProfileInString(mac, "name")
-            periMap[mac] = setting.getCustomObj(mac, name).apply { event = this@CentralManager }
+            periMap[mac] = (setting?.getCustomObj(mac, name) ?: PeriObj(mac))
+                .apply { event = this@CentralManager }
         }
     }
 
