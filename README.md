@@ -1,2 +1,2 @@
-# Lumos_ble
-Aim to became the easiest ble module.
+# Lumos BLE Android ver.
+- Aim to become the simplest ble module for both Android & iOS.
