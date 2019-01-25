@@ -91,16 +91,16 @@ class MainActivity : AppCompatActivity() {
 
     //   Data Update point
     private val availHandler = object: AvailObj.Listener{
-        override fun onRSSIChanged(rssi: Int, mac: String) {
-            val idx = getAvailIdx(mac) ?: return
+        override fun onRSSIChanged(rssi: Int, availObj: AvailObj) {
+            val idx = getAvailIdx(availObj.mac) ?: return
             val vh = getRenderItem(ListAdapter.IndexPath(AVAIL, idx))
             vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
         }
     }
 
     private val periHandler = object : PeriObj.Listener{
-        override fun onRSSIChanged(rssi: Int, mac: String) {
-            val idx = getPeripheralIdx(mac) ?: return
+        override fun onRSSIChanged(rssi: Int, periObj: PeriObj) {
+            val idx = getPeripheralIdx(periObj.mac) ?: return
             val vh = getRenderItem(ListAdapter.IndexPath(PERI, idx))
             vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
         }

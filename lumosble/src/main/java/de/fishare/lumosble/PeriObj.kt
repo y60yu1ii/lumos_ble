@@ -14,7 +14,7 @@ open class PeriObj(val mac:String){
         fun onStatusChanged(isConnected:Boolean, periObj: PeriObj){}
     }
     interface Listener{
-        fun onRSSIChanged(rssi: Int, mac:String ){}
+        fun onRSSIChanged(rssi: Int, periObj: PeriObj){}
         fun onUpdated(label:String, value: Any, periObj: PeriObj){}
     }
     var device: BluetoothDevice? = null
@@ -35,7 +35,7 @@ open class PeriObj(val mac:String){
 
     var rssi = 0
         set(value) {
-            if(value != field && rssi < 0){ listener?.onRSSIChanged(rssi, mac) }
+            if(value != field && rssi < 0){ listener?.onRSSIChanged(rssi, this@PeriObj) }
             field = value
         }
 
@@ -97,7 +97,7 @@ open class PeriObj(val mac:String){
             Timer("RSSI", false).schedule(1200){
                 controller?.gatt?.readRemoteRssi()
             }
-            listener?.onRSSIChanged(rawRSSI, mac)
+            listener?.onRSSIChanged(rawRSSI, this@PeriObj)
         }
 
         override fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {

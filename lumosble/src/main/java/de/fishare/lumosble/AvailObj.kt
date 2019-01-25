@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothDevice
 open class AvailObj(val device: BluetoothDevice){
     open var TAG = "Avail"
     interface Listener{
-        fun onRSSIChanged(rssi: Int, mac:String ){}
+        fun onRSSIChanged(rssi: Int, availObj:AvailObj ){}
         fun onUpdated(label:String, value: Any, availObj: AvailObj){}
     }
 
@@ -24,7 +24,7 @@ open class AvailObj(val device: BluetoothDevice){
         set(value) {
             if(value != field && rssi < 0){
 //                print("avail $mac rssi is $rssi")
-                listener?.onRSSIChanged(rssi, mac)
+                listener?.onRSSIChanged(rssi, this)
             }
             field = value
             lastUpdatTime = System.currentTimeMillis()
