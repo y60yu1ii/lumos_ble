@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         setUpCentralManager()
         initListView()
         onRefresh()
+
     }
 
     override fun onDestroy() {

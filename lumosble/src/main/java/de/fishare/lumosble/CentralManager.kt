@@ -9,6 +9,14 @@ import android.content.pm.PackageManager
 import android.os.Handler
 import android.support.v4.app.ActivityCompat
 
+interface CentralManagerJavaInterface{
+    companion object {
+        fun getInstance(context: Context): CentralManager {
+            return CentralManager.getInstance(context)
+        }
+    }
+}
+
 class CentralManagerBuilder(var serviceUUIDs : List<String> = listOf()){
     fun build(context: Context):CentralManager{
         CentralManager.serviceUUIDs = serviceUUIDs

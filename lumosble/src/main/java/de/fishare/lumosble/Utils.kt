@@ -5,10 +5,9 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
 import java.util.*
-import kotlin.experimental.and
-object Event {
-    @JvmStatic val CONNECTION = "de.fishare.connection"
-    @JvmStatic val REFRESH = "de.fishare.refresh"
+object Event{
+    @JvmField val CONNECTION = "de.fishare.connection"
+    @JvmField val REFRESH = "de.fishare.refresh"
 }
 
 
