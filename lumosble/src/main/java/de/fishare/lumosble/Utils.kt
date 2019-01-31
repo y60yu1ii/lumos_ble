@@ -6,9 +6,10 @@ import android.os.Parcelable
 import android.util.Log
 import java.util.*
 import kotlin.experimental.and
-
-val CONNECTION_EVENT = "de.fishare.connection"
-val REFRESH_EVENT = "de.fishare.refresh"
+object Event {
+    @JvmStatic val CONNECTION = "de.fishare.connection"
+    @JvmStatic val REFRESH = "de.fishare.refresh"
+}
 
 
 fun UUID.short():String {return this.toString().substring(4, 8)}

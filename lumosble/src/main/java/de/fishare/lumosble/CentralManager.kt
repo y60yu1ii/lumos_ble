@@ -73,7 +73,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         override fun onLost(device: BluetoothDevice, RSSI: Int) {
             print(TAG, "device LOST is ${device.address} and rssi is $RSSI")
             avails.removeAll { it.mac == device.address }
-                .apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
+                .apply { context.sendBroadcast(Intent(Event.REFRESH)) }
         }
     }
 
@@ -125,7 +125,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
             }
         }
 
-        context.sendBroadcast(Intent(CONNECTION_EVENT).apply {
+        context.sendBroadcast(Intent(Event.CONNECTION).apply {
             putExtra("mac", periObj.mac)
             putExtra("connected", isConnected)
         })
@@ -164,12 +164,12 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     }
 
     fun clearAvl(){
-        avails.removeAll{true}.apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
+        avails.removeAll{true}.apply { context.sendBroadcast(Intent(Event.REFRESH)) }
     }
 
     fun clearOutdateAvl(){
         avails.removeAll { (System.currentTimeMillis() - it.lastUpdatTime) > OUTDATE_PERIOD * 1000 }
-            .apply { context.sendBroadcast(Intent(REFRESH_EVENT)) }
+            .apply { context.sendBroadcast(Intent(Event.REFRESH)) }
     }
 
     fun checkPermit(activity: Activity){

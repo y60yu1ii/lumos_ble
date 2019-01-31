@@ -235,21 +235,21 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object :BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             when(intent?.action){
-                CONNECTION_EVENT->{
+                Event.CONNECTION->{
                     val mac = intent.getStringExtra("mac") ?: ""
                     val isConnected = intent.getBooleanExtra("connected", false)
                     print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
                     onRefresh()
                 }
-                REFRESH_EVENT->{ onRefresh() }
+                Event.REFRESH->{ onRefresh() }
             }
         }
     }
 
     private fun addBroadcastReceiver(){
         val filter = IntentFilter().apply {
-            addAction(CONNECTION_EVENT)
-            addAction(REFRESH_EVENT)
+            addAction(Event.CONNECTION)
+            addAction(Event.REFRESH)
         }
         registerReceiver(receiver, filter)
         isRegistered = true
