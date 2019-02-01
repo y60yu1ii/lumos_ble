@@ -33,7 +33,7 @@ open class PeriObj(val mac:String){
     var listener:Listener?=null
     var event:StatusEvent?=null
 
-    var rssi = 127
+    var rssi = 0
 
     open fun connect(dev: BluetoothDevice, context: Context){
         connectingLock = true
