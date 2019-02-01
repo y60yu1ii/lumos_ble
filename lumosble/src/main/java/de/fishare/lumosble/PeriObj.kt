@@ -33,13 +33,7 @@ open class PeriObj(val mac:String){
     var listener:Listener?=null
     var event:StatusEvent?=null
 
-    var rssi = 0
-        set(value) {
-            if(value != field && value < 0){
-                field = value
-                listener?.onRSSIChanged(field, this@PeriObj)
-            }
-        }
+    var rssi = 127
 
     open fun connect(dev: BluetoothDevice, context: Context){
         connectingLock = true
@@ -99,6 +93,7 @@ open class PeriObj(val mac:String){
             Timer("RSSI", false).schedule(1200){
                 controller?.gatt?.readRemoteRssi()
             }
+            rssi = rawRSSI
             listener?.onRSSIChanged(rawRSSI, this@PeriObj)
         }
 

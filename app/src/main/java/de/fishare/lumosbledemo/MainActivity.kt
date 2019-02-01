@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         override fun onRSSIChanged(rssi: Int, periObj: PeriObj) {
             val idx = getPeripheralIdx(periObj.mac) ?: return
             val vh = getRenderItem(ListAdapter.IndexPath(PERI, idx))
-            vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
+            vh?.lblRSSI?.post { vh.lblRSSI.text = periObj.rssi.toString() }
         }
 
         override fun onUpdated(label: String, value: Any, periObj: PeriObj) {
