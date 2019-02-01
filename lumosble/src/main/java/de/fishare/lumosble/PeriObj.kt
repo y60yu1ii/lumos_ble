@@ -35,8 +35,10 @@ open class PeriObj(val mac:String){
 
     var rssi = 0
         set(value) {
-            if(value != field && rssi < 0){ listener?.onRSSIChanged(rssi, this@PeriObj) }
-            field = value
+            if(value != field && value < 0){
+                field = value
+                listener?.onRSSIChanged(field, this@PeriObj)
+            }
         }
 
     open fun connect(dev: BluetoothDevice, context: Context){
