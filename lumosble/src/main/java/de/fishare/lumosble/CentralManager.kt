@@ -169,7 +169,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
     }
 
     fun clearOutdateAvl(){
-        avails.removeAll { (System.currentTimeMillis() - it.lastUpdatTime) > OUTDATE_PERIOD * 1000 }
+        avails.removeAll { (System.currentTimeMillis() - it.lastUpdateTime) > OUTDATE_PERIOD * 1000 }
             .apply { context.sendBroadcast(Intent(Event.REFRESH)) }
     }
 
