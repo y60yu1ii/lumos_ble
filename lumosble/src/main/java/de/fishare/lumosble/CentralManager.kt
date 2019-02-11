@@ -34,6 +34,7 @@ class CentralManager private constructor(val context : Context): PeriObj.StatusE
         var serviceUUIDs: List<String> = listOf()
         const val REGX_ALL = ".*?"
     }
+
     private var CONNECT_THRESHOLD = -75f
     private var OUTDATE_PERIOD = 10// in second
     var event : EventListener? = null
