@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import de.fishare.lumosble.*
 import de.fishare.lumosbledemo.demos.AmbObj
-import de.fishare.lumosbledemo.demos.Buddy
 
 class MainActivity : AppCompatActivity() {
     private val centralMgr by lazy { CentralManagerBuilder(listOf()).build(this) }
@@ -69,18 +68,16 @@ class MainActivity : AppCompatActivity() {
 
     private val centralSetting = object :CentralManager.Setting{
         override fun getNameRule(): String {
-//            return "(AMB)-[a-zA-Z0-9]{4}"
-                return "(Joey|BUDDY)-[a-zA-Z0-9]{3,7}"
+            return "(AMB)-[a-zA-Z0-9]{4}"
         }
 
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
             return AvailObj(device)
         }
 
-        override fun getCustomObj(mac: String, name:String): PeriObj {
-            print(TAG, "GET Custom obj with name is $name")
-            return Buddy(mac)
-        }
+//        override fun getCustomObj(mac: String, name:String): PeriObj {
+//            print(TAG, "GET Custom obj with name is $name")
+//        }
     }
 
     private val centralEvents = object : CentralManager.EventListener{

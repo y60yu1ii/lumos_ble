@@ -1,4 +1,4 @@
-package de.fishare.lumosbledemo
+package de.fishare.lumosbledemo.demos
 
 import android.bluetooth.BluetoothDevice
 import de.fishare.lumosble.AvailObj
