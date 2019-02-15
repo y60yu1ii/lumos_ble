@@ -3,39 +3,41 @@ package de.fishare.lumosble
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import java.util.*
-import java.util.logging.Handler
-import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.schedule
 import kotlin.properties.Delegates
 
+interface StatusEvent{
+    fun onStatusChanged(isConnected:Boolean, periObj: PeriObj){}
+}
+interface PeriObjListener{
+    fun onRSSIChanged(rssi: Int, periObj: PeriObj){}
+    fun onUpdated(label:String, value: Any, periObj: PeriObj){}
+}
+
 open class PeriObj(val mac:String){
     open var TAG = "Peri"
-    interface StatusEvent{
-        fun onStatusChanged(isConnected:Boolean, periObj: PeriObj){}
-    }
-    interface Listener{
-        fun onRSSIChanged(rssi: Int, periObj: PeriObj){}
-        fun onUpdated(label:String, value: Any, periObj: PeriObj){}
-    }
     var device: BluetoothDevice? = null
     var controller: GattController? = null
     var name:String = "name"
-    var connectingLock = false
-    var isConnected = false
     var markDelete = false
-    var isAuthSuccess : Boolean by Delegates.observable(
-        initialValue = false,
-        onChange = { _, _, new ->
-            dealWithAuthState(new)
-        }
-    )
+    var blocked = false
+    var connectingLock = false
+    var isConnecting = false
+    var isConnected = false
 
-    var listener:Listener?=null
+    var listener:PeriObjListener?=null
     var event:StatusEvent?=null
 
     var rssi = 0
 
-    open fun connect(dev: BluetoothDevice, context: Context){
+    open fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {}
+    open fun onRSSIChange(rssi: Int) {}
+    open fun setUp(){
+        isConnecting = false
+        loopReadRSSI()
+    }
+    fun connect(dev: BluetoothDevice, context: Context){
+        isConnecting = true
         connectingLock = true
         this.device = dev
         name = dev.name
@@ -44,48 +46,35 @@ open class PeriObj(val mac:String){
             listener = controlHandler
         }
     }
-
-    open fun disconnect(){
+    open fun disconnect(){}
+    open fun connectionDropped(){}
+    fun clear(){
         controller?.disconnect()
         event?.onStatusChanged(false, this)
     }
 
-    open fun authAndSubscribe(){
-        connectingLock = false
-        loopReadRSSI()
-    }
-
-    open fun loopReadRSSI(){
+    fun loopReadRSSI(){
         Timer("RSSI", false).schedule(600){
             controller?.gatt?.readRemoteRssi()
         }
     }
 
-    open fun dealWithAuthState(auth:Boolean){
-        print(TAG, "authentication status is ${if(auth)"Y" else "N"}")
-    }
-
-    open fun writeTo(uuidStr:String, data:ByteArray){
+    fun writeTo(uuidStr:String, data:ByteArray){
         controller?.writeTo(uuidStr, data, false)
     }
 
-    open fun writeWithResponse(uuidStr:String, data:ByteArray){
+    fun writeWithResponse(uuidStr:String, data:ByteArray){
         controller?.writeTo(uuidStr, data, true)
     }
 
-    open fun getUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
-
+    fun subscribeTo(uuidStr: String){
+       controller?.subscribeTo(uuidStr)
     }
+
 
     private val controlHandler = object : GattController.Listener {
         override fun didDiscoverServices() {
-            authAndSubscribe()
-        }
-
-        override fun didChangeState(isConnected: Boolean) {
-            print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
-            this@PeriObj.isConnected = isConnected
-            event?.onStatusChanged(isConnected, this@PeriObj)
+            setUp()
         }
 
         override fun onRSSIUpdated(rawRSSI: Int) {
@@ -98,7 +87,14 @@ open class PeriObj(val mac:String){
         }
 
         override fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
-            getUpdated(uuidStr, value, kind)
+            this@PeriObj.onUpdated(uuidStr, value, kind)
+        }
+
+        override fun didChangeState(isConnected: Boolean) {
+            print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
+            this@PeriObj.isConnected = isConnected
+            if(!isConnected){ connectionDropped() }
+            event?.onStatusChanged(isConnected, this@PeriObj)
         }
     }
 }
