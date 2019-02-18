@@ -9,7 +9,7 @@ open class AvailObj(val device: BluetoothDevice){
         fun onUpdated(label:String, value: Any, availObj: AvailObj){}
     }
 
-    var name:String = device.name ?: ""
+    var name:String = device.name ?: "name"
     var mac:String  = device.address
     var lastUpdateTime:Long = 0
     var rawData:ByteArray = byteArrayOf()
@@ -18,6 +18,7 @@ open class AvailObj(val device: BluetoothDevice){
             field = value
         }
     open fun onRawUpdate(data:ByteArray){}
+    open fun setUp(){}
 
     var listener:Listener?=null
     var rssi = 0

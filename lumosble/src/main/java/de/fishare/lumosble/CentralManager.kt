@@ -90,6 +90,7 @@ class CentralManager private constructor(val context : Context): StatusEvent {
     private fun makeAvail(device:BluetoothDevice, rawData:ByteArray):AvailObj{
         val avl = setting?.getCustomAvl(device) ?: AvailObj(device)
         avl.rawData = rawData
+        avl.setUp()
         return avl
     }
 
