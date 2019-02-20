@@ -10,7 +10,7 @@ ext {
     libraryDescription = 'A simple library that demostrates ble usage.'
     siteUrl = 'https://me.fishare.de'
     gitUrl = 'https://gitlab.com/y60yu1ii/lumos-ble.git/'
-    libraryVersion = '0.1.8b'
+    libraryVersion = '0.1.9b'
     developerId = 'y60yu1ii'
     developerName = 'YaoYu Li'
     developerEmail = 'y60yu1ii@fishare.de'
@@ -26,7 +26,7 @@ android {
         minSdkVersion 18
         targetSdkVersion 28
         versionCode 4
-        versionName '0.1.8b'
+        versionName '0.1.9a'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -46,6 +46,7 @@ repositories {
 dependencies {
     testImplementation 'junit:junit:4.12'
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    //must be compile to expose to child
     compile 'com.nabinbhandari.android:permissions:3.8'
 }
 // Uncomment following two lines only during publishing.
