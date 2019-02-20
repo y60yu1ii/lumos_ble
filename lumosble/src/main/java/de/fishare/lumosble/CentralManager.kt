@@ -1,5 +1,6 @@
 package de.fishare.lumosble
 
+import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -7,7 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
-import android.support.v4.app.ActivityCompat
+import com.nabinbhandari.android.permissions.PermissionHandler
+import android.Manifest.permission
+import android.Manifest.permission.CALL_PHONE
+import com.nabinbhandari.android.permissions.Permissions
+import java.util.ArrayList
+
 
 class CentralManagerBuilder(var serviceUUIDs : List<String> = listOf()){
     fun build(context: Context):CentralManager{
@@ -174,18 +180,28 @@ class CentralManager private constructor(val context : Context): StatusEvent {
             .apply { context.sendBroadcast(Intent(Event.REFRESH)) }
     }
 
-    fun checkPermit(activity: Activity){
-        var granted = false
-        BLE_PERMIT.forEach {
-            granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-        }
-        if(granted){
-           scan()
-        }else{
-            val req = context.getString(R.string.req_action)
-            val intent = Intent().apply { action = req }
-            activity.startActivity( intent )
-        }
+//    fun checkPermit(activity: Activity){
+//        var granted = false
+//        BLE_PERMIT.forEach {
+//            granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+//        }
+//        if(granted){
+//           scan()
+//        }else{
+//            val req = context.getString(R.string.req_action)
+//            val intent = Intent().apply { action = req }
+//            activity.startActivity( intent )
+//        }
+//    }
+
+    fun checkPermit(context: Context){
+        val options = Permissions.Options().setCreateNewTask(true)
+        Permissions.check(context, BLE_PERMIT, null, options, object : PermissionHandler() {
+            override fun onGranted() {
+                scan()
+            }
+        })
+
     }
 
     fun refreshBluetoothState(){

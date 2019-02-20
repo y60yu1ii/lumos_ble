@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         centralMgr.event = centralEvents
         centralMgr.setting = centralSetting
         centralMgr.loadHistory()
-        centralMgr.checkPermit(this)
+        centralMgr.checkPermit(applicationContext)
     }
 
     private val centralSetting = object :CentralManager.Setting{
