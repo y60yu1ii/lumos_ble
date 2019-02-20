@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
 import de.fishare.lumosble.CentralManager.Companion.BLE_PERMIT
 
 class ReqActivity : Activity() {
@@ -14,20 +13,20 @@ class ReqActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkPermission()
+//        checkPermission()
     }
 
-    private fun checkPermission(){
-        var granted = false
-        BLE_PERMIT.forEach {
-            granted = ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
-        if(granted) {
-            CentralManager.getInstance(applicationContext).refreshBluetoothState()
-        }else{
-            ActivityCompat.requestPermissions(this, CentralManager.BLE_PERMIT, BLE_REQ)
-        }
-    }
+//    private fun checkPermission(){
+//        var granted = false
+//        BLE_PERMIT.forEach {
+//            granted = ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+//        }
+//        if(granted) {
+//            CentralManager.getInstance(applicationContext).refreshBluetoothState()
+//        }else{
+//            ActivityCompat.requestPermissions(this, CentralManager.BLE_PERMIT, BLE_REQ)
+//        }
+//    }
 
 
 
