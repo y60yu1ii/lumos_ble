@@ -10,7 +10,7 @@ ext {
     libraryDescription = 'A simple library that demostrates ble usage.'
     siteUrl = 'https://me.fishare.de'
     gitUrl = 'https://gitlab.com/y60yu1ii/lumos-ble.git/'
-    libraryVersion = '0.1.8a'
+    libraryVersion = '0.1.8b'
     developerId = 'y60yu1ii'
     developerName = 'YaoYu Li'
     developerEmail = 'y60yu1ii@fishare.de'
@@ -26,13 +26,14 @@ android {
         minSdkVersion 18
         targetSdkVersion 28
         versionCode 4
-        versionName '0.1.8a'
+        versionName '0.1.8b'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
 
     buildTypes {
         release {
+            zipAlignEnabled true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -43,11 +44,9 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-//    api 'com.android.support:support-compat:28.0.0'
-    api 'com.nabinbhandari.android:permissions:3.8'
+    compile 'com.nabinbhandari.android:permissions:3.8'
 }
 // Uncomment following two lines only during publishing.
 apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'
