@@ -10,7 +10,7 @@ ext {
     libraryDescription = 'A simple library that demostrates ble usage.'
     siteUrl = 'https://me.fishare.de'
     gitUrl = 'https://gitlab.com/y60yu1ii/lumos-ble.git/'
-    libraryVersion = '0.1.9c'
+    libraryVersion = '0.1.9d'
     developerId = 'y60yu1ii'
     developerName = 'YaoYu Li'
     developerEmail = 'y60yu1ii@fishare.de'
@@ -26,7 +26,7 @@ android {
         minSdkVersion 18
         targetSdkVersion 28
         versionCode 4
-        versionName '0.1.9c'
+        versionName '0.1.9d'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
