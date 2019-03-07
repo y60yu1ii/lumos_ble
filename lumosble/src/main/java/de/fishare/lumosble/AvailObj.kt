@@ -17,6 +17,9 @@ open class AvailObj(val device: BluetoothDevice){
             onRawUpdate(value)
             field = value
         }
+    open fun onRSSIChange(rssi:Int){
+        listener?.onRSSIChanged(rssi, this)
+    }
     open fun onRawUpdate(data:ByteArray){}
     open fun setUp(){}
 
@@ -24,8 +27,7 @@ open class AvailObj(val device: BluetoothDevice){
     var rssi = 0
         set(value) {
             if(value != field && rssi < 0){
-//                print("avail $mac rssi is $rssi")
-                listener?.onRSSIChanged(rssi, this)
+                onRSSIChange(rssi)
             }
             field = value
             lastUpdateTime = System.currentTimeMillis()

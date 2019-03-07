@@ -2,7 +2,6 @@ package de.fishare.lumosbledemo.demos
 
 import android.os.Handler
 import de.fishare.lumosble.*
-import java.nio.ByteBuffer
 
 class AmbObj(mac: String) : PeriObj(mac) {
     override var TAG = "AmbObj"
@@ -19,7 +18,6 @@ class AmbObj(mac: String) : PeriObj(mac) {
             controller?.subscribeTo("2a05")
         }, 2000)
     }
-
     override fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {
         if(kind == GattController.UpdateKind.Notify){
             print(TAG, "[Notify] is $uuidStr has ${value.hex4Human()} int is ${value.to2Int()}")
