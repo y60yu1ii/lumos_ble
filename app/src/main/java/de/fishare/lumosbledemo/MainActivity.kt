@@ -1,5 +1,6 @@
 package de.fishare.lumosbledemo
 
+import android.app.AlertDialog
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -14,9 +15,11 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import de.fishare.lumosble.*
 import de.fishare.lumosbledemo.demos.AmbObj
 import de.fishare.lumosbledemo.demos.BcastAvl
+import de.fishare.lumosbledemo.demos.BuddyObj
 
 class MainActivity : AppCompatActivity() {
     private val centralMgr by lazy { CentralManagerBuilder(listOf()).build(this) }
@@ -68,13 +71,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val centralSetting = object :CentralManager.Setting{
+        override fun getNameRule(): String {
+            return "(Joey|BUDDY)-[a-zA-Z0-9]{3,7}"
+        }
+
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
             return BcastAvl(device)
         }
 
-//        override fun getCustomObj(mac: String, name:String): PeriObj {
-//            print(TAG, "GET Custom obj with name is $name")
-//        }
+        override fun getCustomObj(mac: String, name:String): PeriObj {
+            print(TAG, "GET Custom obj with name is $name")
+            return BuddyObj(mac)
+        }
     }
 
     private val centralEvents = object : CentralManager.EventListener{
@@ -106,10 +114,6 @@ class MainActivity : AppCompatActivity() {
             vh?.lblEvent?.post {
                 if(value is ByteArray){
                     vh.lblEvent.text = "[NOTIFY] $label [${value.hex4Human()}]"
-                }else{
-                    val myRed = (value as Int).remap(50, 1000, 0, 255)
-                    vh.lblEvent.text = "[NOTIFY] $label [${value}] color is ${myRed}"
-                    vh.lblEvent.setBackgroundColor(Color.rgb(myRed, 200, 200))
                 }
             }
         }
@@ -234,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                     val mac = intent.getStringExtra("mac") ?: ""
                     val isConnected = intent.getBooleanExtra("connected", false)
                     print(TAG, "$mac is ${if(isConnected) "CONNECT" else "DISCONNECT" }")
+                    alert(mac, isConnected)
                     onRefresh()
                 }
                 Event.REFRESH->{ onRefresh() }
@@ -249,4 +254,16 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(receiver, filter)
         isRegistered = true
     }
+
+    private fun alert(key:String, isConnect:Boolean){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Connection")
+        builder.setMessage("$key is ${if(isConnect)"connected" else "dropped"}.")
+        builder.setNegativeButton("OK"){ _,_-> print("cancel") }
+        val dialog = builder.create()
+        runOnUiThread {
+            dialog.show()
+        }
+    }
+
 }
