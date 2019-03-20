@@ -3,6 +3,7 @@ package de.fishare.lumosble
 import android.bluetooth.*
 import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+import android.os.Build.VERSION_CODES.P
 import android.os.Handler
 import android.util.Log
 import java.util.*
@@ -15,12 +16,14 @@ class GattController : BluetoothGattCallback() {
         fun onRSSIUpdated(rawRSSI: Int){}
         fun onUpdated(uuidStr: String, value: ByteArray, kind:UpdateKind){}
     }
+
     companion object {
        private const val TAG = "Controller"
        private const val WRITE_DELAY:Float = 0.2f// delay write for 150 ms
        private const val DESCRIPTOR_STR = "00002902-0000-1000-8000-00805f9b34fb"
     }
 
+    var desiredServices = listOf<String>()
     var isConnected : Boolean = false
     var gatt : BluetoothGatt? = null
     private var writeQueue: WriteQueue = WriteQueue()
@@ -59,17 +62,18 @@ class GattController : BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         super.onServicesDiscovered(gatt, status)
-//        print(TAG, " === start discovering service === ")
+        print(TAG, " === start discovering service === ")
         for (service in gatt.services) {
-//            print(TAG, "Service is ${service.uuid.short()}")
-//            print(TAG, "Service is ${service.uuid.short()}")
-            for (characteristic in service.characteristics) {
-                val uuidStr = characteristic.uuid.short()
-                chMap[uuidStr] = characteristic
-//                print(TAG, "\t\t ch ${characteristic.uuid}")
+            print(TAG, "Service is ${service.uuid.short()}")
+            if(desiredServices.isEmpty() || desiredServices.contains(service.uuid.short())){
+                for (characteristic in service.characteristics) {
+                    val uuidStr = characteristic.uuid.short()
+                    chMap[uuidStr] = characteristic
+                    print(TAG, "\t\t ch short ${characteristic.uuid.short()} ${characteristic.uuid}")
+                }
             }
         }
-//        print(TAG, " === end discovering service === ")
+        print(TAG, " === end discovering service === ")
         listener?.didDiscoverServices()
     }
 
@@ -111,7 +115,7 @@ class GattController : BluetoothGattCallback() {
         writeQueue.offer(object : WriteQueue.WritingRunnable {
             override fun writeAction() {
                 ch.let {
-//                    print(TAG, "--------------------------- Subscribe to  ${ch.uuid?.short()}    ------------------------------------------")
+                    print(TAG, "--------------------------- Subscribe to  ${ch.uuid?.short()} ${ch.uuid}   ------------------------------------------")
                     gatt?.setCharacteristicNotification(ch, true)
                     val config = ch.getDescriptor(UUID.fromString(DESCRIPTOR_STR))
                     config?.let{
@@ -129,7 +133,7 @@ class GattController : BluetoothGattCallback() {
         val uuidStr = characteristic?.uuid?.short() ?: ""
         print(TAG, "[READ FROM] $uuidStr ${value.hex4Human()}")
         popWriteQueue()
-        listener?.onUpdated(uuidStr, value, UpdateKind.Read)
+        listener?.onUpdated(uuidStr, value, GattController.UpdateKind.Read)
     }
 
     override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
@@ -144,7 +148,7 @@ class GattController : BluetoothGattCallback() {
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
         val uuidStr = descriptor?.uuid?.short()
-//        print(TAG, "[WRITE TO DESCRPT] $uuidStr status $status")
+        print(TAG, "[WRITE TO DESCRPT] $uuidStr status $status")
         popWriteQueue()
     }
 

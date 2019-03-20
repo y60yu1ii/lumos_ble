@@ -102,7 +102,7 @@ class CentralManager private constructor(val context : Context): StatusEvent {
 
     private fun connect(avl: AvailObj){
         val periObj = periMap[avl.mac] ?: setting?.getCustomObj(avl.mac, avl.name) ?: PeriObj(avl.mac)
-        if(!periObj.blocked){
+        if(!periObj.blocked && !periObj.isConnecting){
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
             periObj.rssi = avl.rssi

@@ -17,12 +17,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import de.fishare.lumosble.*
-import de.fishare.lumosbledemo.demos.AmbObj
-import de.fishare.lumosbledemo.demos.BcastAvl
-import de.fishare.lumosbledemo.demos.BuddyObj
+import de.fishare.lumosbledemo.demos.*
 
 class MainActivity : AppCompatActivity() {
-    private val centralMgr by lazy { CentralManagerBuilder(listOf()).build(this) }
+    private val centralMgr by lazy { CentralManagerBuilder(listOf("1802")).build(this) }
     private lateinit var adapter: ListAdapter
     var avails = mutableListOf<AvailObj>()
     var peris = mutableListOf<PeriObj>()
@@ -76,12 +74,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
-            return BcastAvl(device)
+            return BuddyCast(device)
         }
 
         override fun getCustomObj(mac: String, name:String): PeriObj {
             print(TAG, "GET Custom obj with name is $name")
-            return BuddyObj(mac)
+//            return BuddyObj(mac)
+            return BuddyPls(mac)
         }
     }
 
@@ -98,6 +97,16 @@ class MainActivity : AppCompatActivity() {
             val idx = getAvailIdx(availObj.mac) ?: return
             val vh = getRenderItem(ListAdapter.IndexPath(AVAIL, idx))
             vh?.lblRSSI?.post { vh.lblRSSI.text = rssi.toString() }
+        }
+
+        override fun onUpdated(label: String, value: Any, availObj: AvailObj) {
+            val idx = getAvailIdx(availObj.mac) ?: return
+            val vh = getRenderItem(ListAdapter.IndexPath(AVAIL, idx))
+            vh?.lblEvent?.post {
+                if(label == "raw"){
+                    vh.lblEvent.text = value.toString()
+                }
+            }
         }
     }
 

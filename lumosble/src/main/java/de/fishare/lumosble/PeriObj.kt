@@ -42,9 +42,13 @@ open class PeriObj(val mac:String){
         this.device = dev
         name = dev.name
         controller = GattController().apply {
+            desiredServices = getDesiredServices()
             gatt = device?.connectGatt(context, false, this)
             listener = controlHandler
         }
+    }
+    open fun getDesiredServices():List<String>{
+        return emptyList()
     }
     open fun disconnect(){}
     open fun connectionDropped(){}
