@@ -7,23 +7,25 @@ import de.fishare.lumosble.hex4Human
 import de.fishare.lumosble.print
 
 class BuddyPls(mac: String) : PeriObj(mac) {
-   override var TAG = "BuddyObj"
+   override var TAG = "BuddyPls"
    private var connectingCount = 0
-    val handler = Handler()
+   val handler = Handler()
+
+    override fun getDesiredServices(): List<String> {
+        return listOf("1802", "0001")
+    }
 
    override fun setUp(){
+       print(TAG, "did Connected")
        if(connectingLock){
            connectingCount += 1
            blocked = connectingCount >= 3
            if(blocked){
-               print(TAG, "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB $name is blocked count is $connectingCount")
+               print(TAG, "Block $name is blocked count is $connectingCount")
                listener?.onUpdated("BLK", "not your tag", this@BuddyPls)
            }
        }
-       writeTo("ffc1", "PQD".toByteArray())
-       writeTo("ffc2", "22222222222".toByteArray())
-       writeTo("ffc3", byteArrayOf(0x01))
-       subscribeTo("ffe1")
+       subscribeTo("0003")
        super.setUp()
 
    }
@@ -33,7 +35,7 @@ class BuddyPls(mac: String) : PeriObj(mac) {
     }
 
     override fun disconnect() {
-        writeWithResponse("ffc4", byteArrayOf(0x01))
+//        writeWithResponse("ffc4", byteArrayOf(0x01))
        handler.postDelayed({
            listener?.onUpdated("CON", "drop it", this@BuddyPls)
            connectionDropped()

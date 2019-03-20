@@ -16,7 +16,7 @@ class BcastAvl(device: BluetoothDevice) : AvailObj(device) {
 
     override fun onRSSIChange(rssi: Int) {
         val nRSSI = kf.filter(rssi.toDouble())
-        print(TAG, "RSSI is $rssi and filtered index is ${nRSSI.toInt()}")
+//        print(TAG, "RSSI is $rssi and filtered index is ${nRSSI.toInt()}")
         listener?.onRSSIChanged(nRSSI.toInt(), this)
     }
 }
