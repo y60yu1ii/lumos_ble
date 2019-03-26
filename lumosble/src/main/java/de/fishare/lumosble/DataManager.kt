@@ -2,6 +2,8 @@ package de.fishare.lumosble
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
+import java.util.*
 
 class DataManager private constructor(var context : Context) {
     companion object : SingletonHolder<DataManager, Context>(::DataManager) {
@@ -9,6 +11,17 @@ class DataManager private constructor(var context : Context) {
         const val GLOBAL = "global"
         const val HISTORY = "history"
         const val NULL = "string.null"
+    }
+
+    fun getPhoneUUID(): String {
+        var uuid = defaults.getString("GUUID", "NULL")
+        if (uuid.equals("NULL", true)) {
+            uuid = UUID.randomUUID().toString()
+            val editor = defaults.edit()
+            editor.putString("GUUID", uuid)
+            editor.apply()
+        }
+        return uuid
     }
 
     private val defaults: SharedPreferences by lazy{

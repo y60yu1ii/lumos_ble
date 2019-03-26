@@ -4,12 +4,22 @@ import android.content.Intent
 import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 object Event{
     @JvmField val CONNECTION = "de.fishare.connection"
     @JvmField val REFRESH = "de.fishare.refresh"
 }
 
+fun postpone(sec:Float, lambda: () -> Unit){
+//        handler.postDelayed({lambda()}, (sec * 1000).toLong())
+    GlobalScope.launch {
+        delay((sec * 1000).toLong())
+        lambda()
+    }
+}
 
 fun UUID.short():String {return this.toString().substring(4, 8)}
 fun String.getUUID(): UUID {return UUID.fromString("0000$this-0000-1000-8000-00805f9b34fb")}

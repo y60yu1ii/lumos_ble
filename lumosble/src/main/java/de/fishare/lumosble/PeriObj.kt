@@ -32,10 +32,12 @@ open class PeriObj(val mac:String){
 
     open fun onUpdated(uuidStr: String, value: ByteArray, kind: GattController.UpdateKind) {}
     open fun onRSSIChange(rssi: Int) {}
+
     open fun setUp(){
         isConnecting = false
         loopReadRSSI()
     }
+
     fun connect(dev: BluetoothDevice, context: Context){
         isConnecting = true
         connectingLock = true

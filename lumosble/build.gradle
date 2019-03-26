@@ -48,6 +48,7 @@ dependencies {
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     //must be compile to expose to child
     compile 'com.nabinbhandari.android:permissions:3.8'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
 }
 // Uncomment following two lines only during publishing.
 apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'

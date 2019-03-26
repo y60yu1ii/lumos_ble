@@ -6,6 +6,9 @@ import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
 import android.os.Build.VERSION_CODES.P
 import android.os.Handler
 import android.util.Log
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 class GattController : BluetoothGattCallback() {
@@ -27,7 +30,6 @@ class GattController : BluetoothGattCallback() {
     var isConnected : Boolean = false
     var gatt : BluetoothGatt? = null
     private var writeQueue: WriteQueue = WriteQueue()
-    private var handler:Handler = Handler()
     private var chMap : MutableMap<String, BluetoothGattCharacteristic> = mutableMapOf()
     var listener: Listener?=null
 
@@ -169,7 +171,7 @@ class GattController : BluetoothGattCallback() {
         synchronized(writeQueue) {
             writeQueue.remove()
             if(writeQueue.isNotEmpty()){
-                delay(WRITE_DELAY){
+                postpone(WRITE_DELAY){
                     writeQueue.write()
                 }
             }
@@ -196,11 +198,4 @@ class GattController : BluetoothGattCallback() {
         return false
     }
 
-    private fun delay(sec:Float, lambda: () -> Unit){
-        handler.postDelayed({lambda()}, (sec * 1000).toLong())
-    }
-
 }
-
-
-

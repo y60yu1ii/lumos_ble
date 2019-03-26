@@ -79,8 +79,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun getCustomObj(mac: String, name:String): PeriObj {
             print(TAG, "GET Custom obj with name is $name")
-//            return BuddyObj(mac)
-            return BuddyPls(mac)
+            return BuddyObj(mac)
+//            return BuddyPls(mac)
         }
     }
 

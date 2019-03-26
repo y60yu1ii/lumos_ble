@@ -12,6 +12,7 @@ import com.nabinbhandari.android.permissions.PermissionHandler
 import android.Manifest.permission
 import android.Manifest.permission.CALL_PHONE
 import com.nabinbhandari.android.permissions.Permissions
+import kotlinx.coroutines.delay
 import java.util.ArrayList
 
 
@@ -207,8 +208,8 @@ class CentralManager private constructor(val context : Context): StatusEvent {
     fun refreshBluetoothState(){
         //force re-open bluetooth after getting permission to start scanning
         BluetoothAdapter.getDefaultAdapter()?.disable()
-        delay(1f){ BluetoothAdapter.getDefaultAdapter()?.enable() }
-        delay(2f){ scan() }
+        postpone(1f){ BluetoothAdapter.getDefaultAdapter()?.enable() }
+        postpone(2f){ scan() }
     }
 
     fun loadHistory(){
@@ -218,9 +219,5 @@ class CentralManager private constructor(val context : Context): StatusEvent {
             periMap[mac] = (setting?.getCustomObj(mac, name) ?: PeriObj(mac))
                 .apply { event = this@CentralManager }
         }
-    }
-
-    private fun delay(sec:Float, lambda: () -> Unit){
-        handler.postDelayed({lambda()}, (sec * 1000).toLong())
     }
 }
