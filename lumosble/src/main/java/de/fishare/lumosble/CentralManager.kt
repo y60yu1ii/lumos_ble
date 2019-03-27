@@ -133,7 +133,6 @@ class CentralManager private constructor(val context : Context): StatusEvent {
                 DataManager.getInstance(context).removeFromHistory(periObj.mac)
             }
         }
-
         context.sendBroadcast(Intent(Event.CONNECTION).apply {
             putExtra("mac", periObj.mac)
             putExtra("connected", isConnected)
@@ -180,20 +179,6 @@ class CentralManager private constructor(val context : Context): StatusEvent {
         avails.removeAll { (System.currentTimeMillis() - it.lastUpdateTime) > OUTDATE_PERIOD * 1000 }
             .apply { context.sendBroadcast(Intent(Event.REFRESH)) }
     }
-
-//    fun checkPermit(activity: Activity){
-//        var granted = false
-//        BLE_PERMIT.forEach {
-//            granted = ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-//        }
-//        if(granted){
-//           scan()
-//        }else{
-//            val req = context.getString(R.string.req_action)
-//            val intent = Intent().apply { action = req }
-//            activity.startActivity( intent )
-//        }
-//    }
 
     fun checkPermit(context: Context){
         val options = Permissions.Options().setCreateNewTask(true)
