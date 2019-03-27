@@ -113,7 +113,6 @@ class CentralManager private constructor(val context : Context): StatusEvent {
             avails.removeAll { it.mac == avl.mac }
             periObj.event = this@CentralManager
             DataManager.getInstance(context).addToHistory(avl.mac)
-            DataManager.getInstance(context).saveProfile(avl.mac, "name", avl.name)
         }
     }
 
