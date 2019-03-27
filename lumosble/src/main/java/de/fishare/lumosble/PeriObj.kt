@@ -60,7 +60,7 @@ open class PeriObj(val mac:String){
     }
 
     fun loopReadRSSI(){
-        Timer("RSSI", false).schedule(600){
+        postpone(0.6f){
             controller?.gatt?.readRemoteRssi()
         }
     }
@@ -84,8 +84,7 @@ open class PeriObj(val mac:String){
         }
 
         override fun onRSSIUpdated(rawRSSI: Int) {
-//            print(TAG, "$mac RSSI is $rawRSSI listener $listener")
-            Timer("RSSI", false).schedule(1200){
+            postpone(1.2f){
                 controller?.gatt?.readRemoteRssi()
             }
             rssi = rawRSSI
