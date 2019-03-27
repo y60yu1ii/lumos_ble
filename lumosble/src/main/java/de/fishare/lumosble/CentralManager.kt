@@ -107,6 +107,7 @@ class CentralManager private constructor(val context : Context): StatusEvent {
             scanner.pause()
             handler.post { periObj.connect(avl.device, context) }
             periObj.rssi = avl.rssi
+            periObj.name = avl.name
             periMap[avl.mac] = periObj
             avl.listener = null
             avails.removeAll { it.mac == avl.mac }

@@ -22,7 +22,7 @@ class GattController : BluetoothGattCallback() {
 
     companion object {
        private const val TAG = "Controller"
-       private const val WRITE_DELAY:Float = 0.2f// delay write for 150 ms
+       private const val WRITE_DELAY:Float = 0.15f// delay write for 150 ms
        private const val DESCRIPTOR_STR = "00002902-0000-1000-8000-00805f9b34fb"
     }
 
@@ -186,7 +186,6 @@ class GattController : BluetoothGattCallback() {
         gatt = null
         isConnected = false
         listener?.didChangeState(isConnected)
-
     }
 
     private fun refreshDeviceCache(gatt: BluetoothGatt?): Boolean {

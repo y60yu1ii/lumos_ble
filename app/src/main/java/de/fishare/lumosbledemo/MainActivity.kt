@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
@@ -15,9 +14,9 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import de.fishare.lumosble.*
 import de.fishare.lumosbledemo.demos.*
+import de.fishare.lumosbledemo.levise.BuddyObj
 
 class MainActivity : AppCompatActivity() {
     private val centralMgr by lazy { CentralManagerBuilder(listOf("1802")).build(this) }
@@ -69,18 +68,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val centralSetting = object :CentralManager.Setting{
-        override fun getNameRule(): String {
-            return "(Joey|BUDDY)-[a-zA-Z0-9]{3,7}"
-        }
 
         override fun getCustomAvl(device: BluetoothDevice): AvailObj {
-            return BuddyCast(device)
+            return BcastAvl(device)
         }
 
         override fun getCustomObj(mac: String, name:String): PeriObj {
             print(TAG, "GET Custom obj with name is $name")
             return BuddyObj(mac)
-//            return BuddyPls(mac)
         }
     }
 
