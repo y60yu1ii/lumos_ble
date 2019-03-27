@@ -38,7 +38,7 @@ open class PeriObj(val mac:String){
         loopReadRSSI()
     }
 
-    fun connect(dev: BluetoothDevice, context: Context){
+    open fun connect(dev: BluetoothDevice, context: Context){
         isConnecting = true
         connectingLock = true
         this.device = dev
